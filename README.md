@@ -56,11 +56,11 @@ app/
 
 ## Componentes principales
 
-•	Global: lectura de archivos y source de los helpers.
-•	UI: navbar, sidebar, y placeholders de las UIs de los módulos.
-•	Server: filtro a la base principal en base a inputs de usuario y llamada a los módulos.
-•	Módulos: (ui + server) lógica reactiva y outputs de cada sección. Reciben la base filtrada como argumento.
-•	Helpers: contienen las funciones necesarias y específicas para cada módulo (por ejemplo, calcular_indice_x(), dibujar_mapa(), etc.) 
+- Global: lectura de archivos y source de los helpers.
+- UI: navbar, sidebar, y placeholders de las UIs de los módulos.
+- Server: filtro a la base principal en base a inputs de usuario y llamada a los módulos.
+- Módulos: (ui + server) lógica reactiva y outputs de cada sección. Reciben la base filtrada como argumento.
+- Helpers: contienen las funciones necesarias y específicas para cada módulo (por ejemplo, calcular_indice_x(), dibujar_mapa(), etc.) 
 
 ---
 
