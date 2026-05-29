@@ -1,8 +1,6 @@
 # tablero-santa-fe
 Tablero de información de eventos de notificación obligatoria de la provincia de Santa Fe
 
-# Tablero de información epidemiológica Santa Fe
-
 ## Propósito
 
 Facilitar la vigilancia y seguimiento de la situación epidemiológica y dinámica de los eventos de notificación obligatoria (ENOS), para contribuir con la toma de decisiones basadas en datos precisos y actualizados.
