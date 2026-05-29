@@ -86,8 +86,8 @@ Módulos
 
 ### Módulo Persona
 
--	El módulo recibe como argumento el reactive base_filtrada
--	La UI del módulo contiene los inputs 
+*	El módulo recibe como argumento el reactive base_filtrada
+*	La UI del módulo contiene los inputs 
 o	tipo_grafico (para elegir entre pirámide para sexo y edad o histograma solo para edad)
 o	mostrar_datos (para elegir entre nro de casos y porcentaje)
 -	En el server del módulo, según tipo_grafico, se llama a la función helper grafico_sexo_edad() o grafico_edad(), que reciben como argumentos a la base_filtrada() y el input de tipo de datos, con lo cual generarán la visualización correspondiente. Ese es el output principal.
