@@ -68,9 +68,9 @@ eventos_disponibles <- sort(unique(base_eventos$EVENTO))
 
 # mapa -------------------------------------------------------------------------
 
-shape_deptos <- st_read("archivos/santafe_deptos.shp")
+shape_deptos <- st_read("archivos/shp departamentos/santafe_deptos.shp")
 
-shape_localidades <- st_read("archivos/localidadsantafe.shp") |>
+shape_localidades <- st_read("archivos/shp localidades/localidadsantafe.shp") |>
   mutate(across(where(is.character), ~ iconv(., from = "latin1", to = "UTF-8")))
 
 # poblacion --------------------------------------------------------------------
