@@ -128,4 +128,18 @@ server <- function(input, output, session) {
   moduloLugarServer("lugar", base_filtrada, depto_seleccionado,anios_seleccionados)
   moduloTiempoServer("tiempo",base_filtrada,anios_seleccionados,base_sin_anio)
 
+  
+  # descargas -------------------------------------------------------------
+  
+  df_tabla_indicadores <- moduloIndicadoresServer("indicadores", base_sin_filtro_depto, anios_seleccionados)
+  
+  output$descargar_tabla <- downloadHandler(
+    filename = function() {
+      paste0("indicadores_tablero_", Sys.Date(), ".xlsx")
+    },
+    content = function(file) {
+      openxlsx::write.xlsx(df_tabla_indicadores(), file)
+    }
+  )
+  
 }

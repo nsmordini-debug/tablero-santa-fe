@@ -90,5 +90,7 @@ moduloIndicadoresServer <- function(id, base_sin_filtro_depto,anios_seleccionado
     output$mapa <- renderLeaflet({
       mapa_deptos_indicadores(base_sin_filtro_depto(), shape_deptos)
     })
+    
+    return(df_tabla) 
   })
 }

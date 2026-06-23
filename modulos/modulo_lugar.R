@@ -45,11 +45,21 @@ moduloLugarUI <- function(id) {
           choices  = c("Casos totales" = "casos", "Casos confirmados" = "confirmados", "Casos probables"="probables"),
           selected = "casos"
         ),
-        radioButtons(
-          inputId = ns("forma_pintado"),
-          label = "Mostrar como",
-          choices = c("Número de casos" = "numero", "Tasa x 100.000 hab." = "tasa"),
-          selected = "numero"
+        # radioButtons(
+        #   inputId = ns("forma_pintado"),
+        #   label = "Mostrar como",
+        #   choices = c("Número de casos" = "numero", "Tasa x 100.000 hab." = "tasa"),
+        #   selected = "numero"
+        # )
+        conditionalPanel(
+          condition = "output.vista_provincial",
+          ns = ns,
+          radioButtons(
+            inputId = ns("forma_pintado"),
+            label = "Mostrar como",
+            choices = c("Número de casos" = "numero","Tasa x 100.000 hab." = "tasa"),
+            selected = "numero"
+          )
         )
       )
     )
@@ -114,5 +124,13 @@ moduloLugarServer <- function(id, base_filtrada, depto_seleccionado, anios_selec
         leaflet() |> addTiles()
       })
     })
+    
+    # output dinámico para mostrar o no el input de qué mostrar ----------------
+    
+    output$vista_provincial <- reactive({
+      is.null(depto_seleccionado())
+    })
+    outputOptions(output, "vista_provincial", suspendWhenHidden = FALSE)
+    
   })
 }

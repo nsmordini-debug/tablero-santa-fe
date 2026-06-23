@@ -1,13 +1,16 @@
 
 ui <- page_navbar(
   
-  title = "Tablero Epidemiológico",
+  title = tagList(
+    img(src = "logo-santa-fe.png", height = "30px", style = "margin-right: 8px;"),
+    "Tablero Epidemiológico"
+  ),
   id = "navbar",
   
   header = tagList(
     useShinyjs(),                            
     tags$head(
-      tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
+      tags$link(rel = "stylesheet", type = "text/css", href = "estilos.css")
     )
   ),
   
@@ -57,6 +60,10 @@ ui <- page_navbar(
         `count-selected-text` = "{0} seleccionados",
         container = "body"
       )
+    ),
+    conditionalPanel(
+      condition = "input.navbar == 'Indicadores'",
+      downloadButton("descargar_tabla", "Descargar tabla (.xlsx)", class = "btn-sm")
     )
   ),
   

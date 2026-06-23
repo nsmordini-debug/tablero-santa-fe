@@ -14,6 +14,7 @@ library(shinyjs)
 library(shinyWidgets)
 library(stringr)
 library(sf)
+library(openxlsx)
 
 # helpers ----------------------------------------------------------------------
 
