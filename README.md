@@ -82,7 +82,7 @@ Módulos
 
 ### Módulo Indicadores
 
--	El módulo recibe como argumento el reactive de la base filtrada por año y evento (base_sin_filtro_depto), y los años seleccionados
+-	El módulo recibe como argumento el reactive de la base filtrada por año y evento (base_sin_filtro_depto), y el reactive con los años seleccionados, a partir del input global (anios_seleccionados()).
 -  Para este módulo se oculta el filtro global de departamentos, ya que la idea es mostrar la información de todos juntos. 
 -  En el server del módulo se llama a las funciones calcular_tabla_indicadores() y mapa_deptos_indicadores(), que generan la tabla y el gráfico respectivamente, los cuales se renderizan con renderReactable y renderLeaflet.
 -	Además, se generan los outputs para los valueboxes (Total de casos, Confirmados, Fallecidos). 
@@ -91,7 +91,7 @@ Módulos
 
 ### Módulo Persona
 
-*	El módulo recibe como argumento el reactive de la base filtrada por año, departamento y evento (base_filtrada()), y el reactive con los años seleccionados, a partir del input global (anios_seleccionados())
+*	El módulo recibe como argumento el reactive de la base filtrada por año, departamento y evento (base_filtrada()), y el reactive anios_seleccionados().
 *	La UI del módulo contiene los inputs 
    - Tipo de gráfico (tipo_grafico), para elegir entre pirámide para sexo y edad o histograma solo para edad
    - Mostrar como (mostrar_como), para elegir entre nro de casos y porcentaje
@@ -103,21 +103,24 @@ Módulos
 
 -	El módulo recibe como argumentos el reactive base_filtrada(), y el reactive del departamnto seleccionado (depto_seleccionado()) definido en el server principal a partir de la información del input filtro_depto (para que pueda llegar la info del input al módulo). También el reactive anios_seleccionados().
 -	La UI del módulo contiene los inputs
-   - Mostrar como (mostrar_como), para elegir entre nro de casos y tasas. Solo se muestra en caso de que estén seleccionados todos los departamentos en el filtro global; cuando hay seleccionado uno solo se oculta con conditional panel (usando el output vista_provincial)
-   - Tipo de casos (clasif_casos), para elegir entre total notificados, confirmados y probables
+   -	Mostrar como (mostrar_como), para elegir entre nro de casos y tasas. Solo se muestra en caso de que estén seleccionados todos los departamentos en el filtro global; cuando hay seleccionado uno solo se oculta con conditional panel (usando el output vista_provincial)
+   -	Tipo de casos (clasif_casos), para elegir entre total notificados, confirmados y probables
 -	En el server del módulo, según depto_seleccionado(), se llama a la función helper mapa_provincia() o mapa_departamento(). Ambas toman como argumentos a mostrar_como y clasif_casos. Se grafica entonces, o bien un mapa de toda la provincia, con los valores para todos los departamentos (mapa de polígonos), o bien el departamento seleccionado con sus localidades (mapa de círculos). Ese es el output principal.
 -	Además, se generan los outputs para los value boxes. 
 
 ### Módulo Tiempo
 
--	El módulo recibe como argumento el reactive base_filtrada(), el reactive los años seleccionados y una base filtrada solo por evento y departamento (para hacer el gráfico por años).
--	La UI del módulo contiene los inputs mostrar_datos (para elegir entre nro de casos y tasas), y tipo_gráfico (para elegir entre distribución por SE, por mes, por año, o corredor endémico).
+-	El módulo recibe como argumento el reactive base_filtrada(), el reactive anios_seleccionados() y un reactive con la base filtrada solo por evento y departamento (base_sin_anio(), para hacer el gráfico por años).
+-	La UI del módulo contiene los inputs 
+   -	Tipo de gráfico (tipo_grafico), para elegir entre gráfico comparando años o semanas epidemiológicas
+   -	Mostrar (vista_semana), para elegir entre gráfico de líneas, que permite comparar distintos años, o de barra para ver un único año. 
+   -	Tipo de casos (clasif_casos), para elegir entre total notificados, confirmados y probables
 -	En el server del módulo, según tipo_gráfico, se llamará a la función helper correspondiente. Según mostrar_datos se generará el gráfico correspondiente. Ese será el output principal.
 -	Además, se generarán los outputs para los valueboxes 
 
 ## Diseño UI
 
-Se usará la librería bslib para generar un layout con navbar superior, donde se ubicarán las pestañas correspondientes a cada módulo, un sidebar donde estarán los inputs glogales, y un panel centrar donde se mostrarán los outputs y filtros específicos de cada módulo.
+Se usa la librería bslib para generar un layout con navbar superior, donde se ubicarán las pestañas correspondientes a cada módulo, un sidebar donde están los inputs glogales, y un panel central donde se muestran los outputs y filtros específicos de cada módulo.
 
 ## Decisiones de diseño 
 

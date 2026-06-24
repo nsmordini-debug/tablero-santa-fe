@@ -40,14 +40,14 @@ moduloTiempoUI <- function(id) {
       card(
         card_header("Opciones gráfico"),
         radioButtons(
-          inputId = ns("agrupacion"),
+          inputId = ns("tipo_grafico"),
           label = "Tipo de gráfico",
           choices = c("Semana epidemiológica" = "semana", "Año" = "anio"),
           selected = "semana"
         ),
         
         conditionalPanel(
-          condition = "input.agrupacion == 'semana' && output.un_solo_anio",
+          condition = "input.tipo_grafico == 'semana' && output.un_solo_anio",
           ns = ns,
           radioButtons(
             inputId = ns("vista_semana"),
@@ -63,7 +63,7 @@ moduloTiempoUI <- function(id) {
         #   selected = "casos"
         # )
         radioButtons(
-          inputId = ns("tipo_casos"),
+          inputId = ns("clasif_casos"),
           label = "Tipo de casos",
           choices = c("Total notificado" = "casos", "Confirmados" = "confirmados", "Probables" = "probables"),
           selected = "casos"
@@ -83,7 +83,7 @@ moduloTiempoServer <- function(id, base_filtrada, anios_seleccionados,base_sin_a
     resumen <- reactive({
       calcular_resumen_tiempo(
         base_filtrada(),
-        input$agrupacion,
+        input$tipo_grafico,
         poblacion,    
         anios_seleccionados()
       )
@@ -103,12 +103,12 @@ moduloTiempoServer <- function(id, base_filtrada, anios_seleccionados,base_sin_a
     
     # base según se eliga por año o semana
     base_activa <- reactive({
-      if (input$agrupacion == "anio") base_sin_anio() else base_filtrada()
+      if (input$tipo_grafico == "anio") base_sin_anio() else base_filtrada()
     })
     
     # para los avalus boxes
     resumen <- reactive({
-      calcular_resumen_tiempo(base_activa(), input$agrupacion, poblacion, anios_seleccionados())
+      calcular_resumen_tiempo(base_activa(), input$tipo_grafico, poblacion, anios_seleccionados())
     })
     
     # para cuando se seleccione la opcion de gráfico por semanas (ver conditional panel en ui)
@@ -122,8 +122,8 @@ moduloTiempoServer <- function(id, base_filtrada, anios_seleccionados,base_sin_a
     output$grafico_tiempo <- renderHighchart({
       grafico_temporal(
         base_activa(),
-        input$agrupacion,
-        input$tipo_casos,
+        input$tipo_grafico,
+        input$clasif_casos,
         poblacion,
         anios_seleccionados(),
         input$vista_semana   
