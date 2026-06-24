@@ -91,7 +91,7 @@ calcular_resumen_lugar <- function(df, pob_df, anios_sel, depto_sel,shape_locs) 
 #   # )
 # }
 
-mapa_provincia <- function(df, shape_deptos, clasif_casos, forma_pintado, pob_df, anios_sel) {
+mapa_provincia <- function(df, shape_deptos, clasif_casos, mostrar_como, pob_df, anios_sel) {
   
   casos_depto <- df |>
     group_by(DEPARTAMENTO_RESIDENCIA) |>
@@ -116,7 +116,7 @@ mapa_provincia <- function(df, shape_deptos, clasif_casos, forma_pintado, pob_df
                            confirmados = confirmados,
                            probables = probables),
       tasa = round(numero / poblacion * 100000, 1),
-      mostrar_valor = if (forma_pintado == "tasa") tasa else numero
+      mostrar_valor = if (mostrar_como == "tasa") tasa else numero
     )
   
   titulo_clasif_casos <- switch(clasif_casos,
@@ -124,7 +124,7 @@ mapa_provincia <- function(df, shape_deptos, clasif_casos, forma_pintado, pob_df
                            confirmados = "Confirmados",
                            probables = "Probables"
   )
-  sufijo <- if (forma_pintado == "tasa") " x 100.000 hab." else " casos"
+  sufijo <- if (mostrar_como == "tasa") " x 100.000 hab." else " casos"
   
   pal <- colorNumeric(
     palette = "YlOrRd",
@@ -148,7 +148,7 @@ mapa_provincia <- function(df, shape_deptos, clasif_casos, forma_pintado, pob_df
     addLegend(
       pal = pal,
       values = ~mostrar_valor,
-      title = paste0(titulo_clasif_casos, if (forma_pintado == "tasa") " (tasa)" else ""),
+      title = paste0(titulo_clasif_casos, if (mostrar_como == "tasa") " (tasa)" else ""),
       position = "bottomright"
     )
 }

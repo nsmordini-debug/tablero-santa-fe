@@ -42,10 +42,10 @@ moduloPersonaUI <- function(id) {
         radioButtons(ns("tipo_grafico"), "Tipo de gráfico",
                      choices = c("Sexo y edad (pirámide)" = "sexo_edad", "Edad (barras)" = "edad"),
                      selected = "sexo_edad"),
-        radioButtons(ns("mostrar_datos"), "Mostrar como",
+        radioButtons(ns("mostrar_como"), "Mostrar como",
                      choices = c("Porcentaje" = "porcentaje","Número de casos" = "casos"),
                      selected = "porcentaje"),
-        radioButtons(ns("que_datos"), "Tipo de casos",
+        radioButtons(ns("clasif_casos"), "Tipo de casos",
                      choices = c("Total notificado" = "total","Confirmados" = "confirmados","Probables"="probables"),
                      selected = "total")
       )
@@ -76,16 +76,16 @@ moduloPersonaServer <- function(id, base_filtrada) {
     
     output$grafico_principal <- renderHighchart({
   
-      df_grafico <- switch(input$que_datos,
+      df_grafico <- switch(input$clasif_casos,
                            total = base_filtrada(),
                            confirmados = base_filtrada() |> filter(CLASIFICACION == "CONFIRMADO"),
                            probables= base_filtrada() |> filter(CLASIFICACION == "PROBABLE")
       )
       
       if (input$tipo_grafico == "sexo_edad") {
-        grafico_sexo_edad(df_grafico, input$mostrar_datos)
+        grafico_sexo_edad(df_grafico, input$mostrar_como)
       } else {
-        grafico_edad(df_grafico, input$mostrar_datos)
+        grafico_edad(df_grafico, input$mostrar_como)
       }
     })
   })

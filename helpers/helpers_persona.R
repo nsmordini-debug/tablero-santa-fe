@@ -30,7 +30,7 @@ orden_grupos <- c(
   "75-79 años", "80 y más"
 )
 
-grafico_sexo_edad <- function(df, mostrar_datos) {
+grafico_sexo_edad <- function(df, mostrar_como) {
   
   # preparación del dataframe para este grádfico
   df_sexo_edad <- df |>
@@ -39,8 +39,8 @@ grafico_sexo_edad <- function(df, mostrar_datos) {
     group_by(GRUPO, SEXO) |> # GRUPO se crea en global, para tener grupos quinquenales, a diferencia de GRUPO_ETARIO que ya estaba en la base
     summarise(nro = n(), .groups = "drop")
   
-  # si mostrar_datos == "porcentaje", se calcula
-  if (mostrar_datos == "porcentaje") {
+  # si mostrar_como == "porcentaje", se calcula
+  if (mostrar_como == "porcentaje") {
     total <- sum(df_sexo_edad$nro)
     df_sexo_edad <- df_sexo_edad |>
       mutate(nro = round(nro / total * 100, 1))
@@ -58,7 +58,7 @@ grafico_sexo_edad <- function(df, mostrar_datos) {
   varones <- df_wide$M * -1   # negativos para ir a la izquierda
   
   # etiqueta del eje x
-  label_x <- if (mostrar_datos == "porcentaje") "%" else "Casos"
+  label_x <- if (mostrar_como == "porcentaje") "%" else "Casos"
   
   highchart() |>
     hc_chart(type = "bar") |>
@@ -102,7 +102,7 @@ grafico_sexo_edad <- function(df, mostrar_datos) {
     hc_title(text = "Distribución por sexo y edad")
 }
 
-grafico_edad <- function(df, mostrar_datos) {
+grafico_edad <- function(df, mostrar_como) {
   
   df_edad <- df |>
     filter(!is.na(EDAD_DIAGNOSTICO)) |>
@@ -110,12 +110,12 @@ grafico_edad <- function(df, mostrar_datos) {
     summarise(nro = n(), .groups = "drop") |>
     arrange(GRUPO)
   
-  if (mostrar_datos == "porcentaje") {
+  if (mostrar_como == "porcentaje") {
     df_edad <- df_edad |>
       mutate(nro = round(nro / sum(nro) * 100, 1))
   }
   
-  label_y <- if (mostrar_datos == "porcentaje") "%" else "Casos"
+  label_y <- if (mostrar_como == "porcentaje") "%" else "Casos"
   
   highchart() |>
     hc_chart(type = "column") |>

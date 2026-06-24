@@ -2,7 +2,7 @@
 ui <- page_navbar(
   
   title = tagList(
-    img(src = "logo-santa-fe.png", height = "30px", style = "margin-right: 8px;"),
+    img(src = "logo-santa-fe-ministerio.jpg", height = "30px", style = "margin-right: 8px;"),
     "Tablero Epidemiológico"
   ),
   id = "navbar",

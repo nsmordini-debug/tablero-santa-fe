@@ -46,7 +46,7 @@ moduloLugarUI <- function(id) {
           selected = "casos"
         ),
         # radioButtons(
-        #   inputId = ns("forma_pintado"),
+        #   inputId = ns("mostrar_como"),
         #   label = "Mostrar como",
         #   choices = c("Número de casos" = "numero", "Tasa x 100.000 hab." = "tasa"),
         #   selected = "numero"
@@ -55,7 +55,7 @@ moduloLugarUI <- function(id) {
           condition = "output.vista_provincial",
           ns = ns,
           radioButtons(
-            inputId = ns("forma_pintado"),
+            inputId = ns("mostrar_como"),
             label = "Mostrar como",
             choices = c("Número de casos" = "numero","Tasa x 100.000 hab." = "tasa"),
             selected = "numero"
@@ -115,7 +115,7 @@ moduloLugarServer <- function(id, base_filtrada, depto_seleccionado, anios_selec
       
       tryCatch({
         if (is.null(depto)) {
-          mapa_provincia(base, shape_deptos, input$clasif_casos, input$forma_pintado, poblacion, anios_seleccionados())
+          mapa_provincia(base, shape_deptos, input$clasif_casos, input$mostrar_como, poblacion, anios_seleccionados())
         } else {
           mapa_departamento(base, shape_deptos, shape_localidades, depto, input$clasif_casos)
         }

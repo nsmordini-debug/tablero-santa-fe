@@ -26,7 +26,7 @@ app/
 ├── server.R
 │
 ├── modulos/
-│   ├── modulo_indicadores/│   │
+│   ├── modulo_indicadores/
 │   ├── modulo_persona/
 │   ├── modulo_lugar/
 │   └── modulo_tiempo/
@@ -38,14 +38,14 @@ app/
 │   └── helpers_tiempo.R
 │
 ├── archivos/
-│   ├── base_eventos.csv
-│   ├── estimaciones_poblacionales.csv
-│   ├── shp_deptos.csv
+│   ├── base_eventos.xlsx
+│   ├── poblacion_deptos.xlsx
+│   ├── shp_deptos/
 │   └── shp_localidades/
 │
 └── www/
     ├── estilos.css
-    └── logo.png
+    └── logo-santa-fe.png
 
 ```
 
@@ -82,33 +82,35 @@ Módulos
 
 ### Módulo Indicadores
 
--	El módulo recibe como argumento el reactive de la base filtrada por año y evento y los años seleccionados
+-	El módulo recibe como argumento el reactive de la base filtrada por año y evento (base_sin_filtro_depto), y los años seleccionados
+-  Para este módulo se oculta el filtro global de departamentos, ya que la idea es mostrar la información de todos juntos. 
 -  En el server del módulo se llama a las funciones calcular_tabla_indicadores() y mapa_deptos_indicadores(), que generan la tabla y el gráfico respectivamente, los cuales se renderizan con renderReactable y renderLeaflet.
 -	Además, se generan los outputs para los valueboxes (Total de casos, Confirmados, Fallecidos). 
+-  También se genera un botón de descarga de la tabla (a partir del df devuelto por el módulo, en el server global)
 
 
 ### Módulo Persona
 
-*	El módulo recibe como argumento el reactive base_filtrada
+*	El módulo recibe como argumento el reactive de la base filtrada por año, departamento y evento (base_filtrada()), y el reactive con los años seleccionados, a partir del input global (anios_seleccionados())
 *	La UI del módulo contiene los inputs 
-o	tipo_grafico (para elegir entre pirámide para sexo y edad o histograma solo para edad)
-o	mostrar_datos (para elegir entre nro de casos y porcentaje)
-o	que_casos (para elegir entre total notificados, confirmados y probables)
--	En el server del módulo, se prepara el df según que_casos se haya seleccioando. Según tipo_grafico, se llama a la función helper grafico_sexo_edad() o grafico_edad(), que reciben como argumentos a la base_filtrada() y el input de tipo de datos, con lo cual generarán la visualización correspondiente. Ese es el output principal.
+   - Tipo de gráfico (tipo_grafico), para elegir entre pirámide para sexo y edad o histograma solo para edad
+   - Mostrar como (mostrar_como), para elegir entre nro de casos y porcentaje
+   - Tipo de casos (clasif_casos), para elegir entre total notificados, confirmados y probables
+-	En el server del módulo, se prepara el df según clasif_casos se haya seleccioando. Según tipo_grafico, se llama a la función helper grafico_sexo_edad() o grafico_edad(), que reciben como argumentos a base_filtrada() y el input de mostrar_como, con lo cual generan la visualización correspondiente. Ese es el output principal.
 -	Además, se generan los outputs para los valueboxes (mediana de edad, razón hombre mujer, rango etario más afectado).
 
 ### Módulo Lugar
 
--	El módulo recibe como argumentos el reactive base_filtrada, y el reactive depto_seleccionado definido en el server principal a partir de la información del input filtro_depto (para que pueda llegar la info al módulo). También los años seleccionados.
+-	El módulo recibe como argumentos el reactive base_filtrada(), y el reactive del departamnto seleccionado (depto_seleccionado()) definido en el server principal a partir de la información del input filtro_depto (para que pueda llegar la info del input al módulo). También el reactive anios_seleccionados().
 -	La UI del módulo contiene los inputs
-o	mostrar datos (para elegir entre nro de casos y tasas, que se muestra en caso de que estén seleccionados todos los departamentos en el filtro global)
-o	clasif_casos (para elegir entre total notificados, confirmados y probables)
--	En el server del módulo, según tipo_gráfico, se llamará a la función helper dibujar_mapa(), que recibirá como argumentos a la base_filtrada y el depto_seleccionado. Según depto_seleccionado se graficará un mapa de toda la provincia, con los valores para todos los departamentos (mapa de polígonos), o el departamento seleccionado con sus localidades (mapa de círculos). Ese será el output principal.
--	Además, se generarán los outputs para los valueboxes 
+   - Mostrar como (mostrar_como), para elegir entre nro de casos y tasas. Solo se muestra en caso de que estén seleccionados todos los departamentos en el filtro global; cuando hay seleccionado uno solo se oculta con conditional panel (usando el output vista_provincial)
+   - Tipo de casos (clasif_casos), para elegir entre total notificados, confirmados y probables
+-	En el server del módulo, según depto_seleccionado(), se llama a la función helper mapa_provincia() o mapa_departamento(). Ambas toman como argumentos a mostrar_como y clasif_casos. Se grafica entonces, o bien un mapa de toda la provincia, con los valores para todos los departamentos (mapa de polígonos), o bien el departamento seleccionado con sus localidades (mapa de círculos). Ese es el output principal.
+-	Además, se generan los outputs para los value boxes. 
 
 ### Módulo Tiempo
 
--	El módulo recibe como argumento el reactive base_filtrada, los años seleccionados y una base filtrada solo por evento y departamento (para hacer el gráfico por años).
+-	El módulo recibe como argumento el reactive base_filtrada(), el reactive los años seleccionados y una base filtrada solo por evento y departamento (para hacer el gráfico por años).
 -	La UI del módulo contiene los inputs mostrar_datos (para elegir entre nro de casos y tasas), y tipo_gráfico (para elegir entre distribución por SE, por mes, por año, o corredor endémico).
 -	En el server del módulo, según tipo_gráfico, se llamará a la función helper correspondiente. Según mostrar_datos se generará el gráfico correspondiente. Ese será el output principal.
 -	Además, se generarán los outputs para los valueboxes 
