@@ -37,7 +37,10 @@ grafico_sexo_edad <- function(df, mostrar_como) {
     filter(SEXO %in% c("F", "M"), !is.na(EDAD_DIAGNOSTICO)) |>
     mutate(GRUPO = factor(GRUPO, levels = orden_grupos)) |>
     group_by(GRUPO, SEXO) |> # GRUPO se crea en global, para tener grupos quinquenales, a diferencia de GRUPO_ETARIO que ya estaba en la base
-    summarise(nro = n(), .groups = "drop")
+    summarise(nro = n(), .groups = "drop")|>
+    complete(GRUPO, SEXO = c("F", "M"), fill = list(nro = 0)) 
+  
+  #browser()
   
   # si mostrar_como == "porcentaje", se calcula
   if (mostrar_como == "porcentaje") {
@@ -61,6 +64,7 @@ grafico_sexo_edad <- function(df, mostrar_como) {
   label_x <- if (mostrar_como == "porcentaje") "%" else "Casos"
   
   highchart() |>
+    #hc_size(height = 700) |>
     hc_chart(type = "bar") |>
     hc_xAxis(
       categories = grupos,
@@ -105,9 +109,11 @@ grafico_sexo_edad <- function(df, mostrar_como) {
 grafico_edad <- function(df, mostrar_como) {
   
   df_edad <- df |>
+    mutate(GRUPO = factor(GRUPO, levels = orden_grupos)) |> 
     filter(!is.na(EDAD_DIAGNOSTICO)) |>
     group_by(GRUPO) |> 
     summarise(nro = n(), .groups = "drop") |>
+    complete(GRUPO, fill = list(nro = 0)) |>
     arrange(GRUPO)
   
   if (mostrar_como == "porcentaje") {

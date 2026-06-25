@@ -65,13 +65,17 @@ moduloIndicadoresServer <- function(id, base_sin_filtro_depto,anios_seleccionado
     output$vb_total <- renderText({resumen()$total})
     
     output$vb_confirmados <- renderText({
-      paste0(resumen()$confirmados, " (", resumen()$porcentaje_confirmados, "%)")
+      confirmados_porcentaje <- resumen()$porcentaje_confirmados
+      confirmados_porcentaje_texto <- if (is.na(confirmados_porcentaje)) "—" else paste0(confirmados_porcentaje, "%")
+      paste0(resumen()$confirmados, " (", confirmados_porcentaje_texto, ")")
     })
     
     #output$vb_fallecidos <- renderText({resumen()$fallecidos})
     
     output$vb_letalidad <- renderText({
-      paste0(resumen()$fallecidos," (", resumen()$letalidad, "%)")
+      letalidad <- resumen()$letalidad
+      letalidad_texto <- if (is.na(letalidad)) "—" else paste0(letalidad, "%")
+      paste0(resumen()$fallecidos, " (", letalidad_texto, ")")
       })
     
     

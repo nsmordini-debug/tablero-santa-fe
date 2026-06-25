@@ -32,9 +32,15 @@ moduloPersonaUI <- function(id) {
     layout_columns(
       col_widths = c(9,3),     
       
+      # card(
+      #   card_header("Distribución por persona"),
+      #   highchartOutput(ns("grafico_principal"))
+      # ),
+      
       card(
+        min_height = "500px", 
         card_header("Distribución por persona"),
-        highchartOutput(ns("grafico_principal"), height = "450px")
+        highchartOutput(ns("grafico_principal"))
       ),
       
       card(

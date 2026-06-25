@@ -1,13 +1,15 @@
 
 # Preparación del dataframe, agrupando x semana o año --------------------------
 
-preparar_serie_temporal <- function(df, agrupacion) {
+preparar_serie_temporal <- function(df, tipo_grafico) {
   
-  columna_periodo <- switch(agrupacion, 
+  columna_periodo <- switch(tipo_grafico, 
                   semana = "SEPI_MINIMA", 
                   anio = "ANIO_MINIMO")
   
   max_semana <- max(max(df$SEPI_MINIMA, na.rm = TRUE), 52) # ver si hay una mejor forma...
+  
+  rango_periodo <- if (tipo_grafico == "semana") 1:max_semana else anios_disponibles
   
   df |>
     group_by(periodo = .data[[columna_periodo]]) |>
@@ -16,30 +18,30 @@ preparar_serie_temporal <- function(df, agrupacion) {
       confirmados = sum(CLASIFICACION =="CONFIRMADO",na.rm = TRUE),
       probables = sum(CLASIFICACION == "PROBABLE", na.rm = TRUE),
       .groups = "drop") |> 
-    complete(periodo = if (agrupacion == "semana") 1:max_semana else unique(periodo),
-             fill = list(casos = 0, confirmados = 0)) |>
+    complete(periodo = rango_periodo,
+             fill = list(casos = 0, confirmados = 0, probables = 0)) |>
     arrange(periodo)
 }
 
 # Gráfico ----------------------------------------------------------------------
 
-grafico_temporal <- function(df, agrupacion, tipo_casos, pob_df, anios_sel, vista_semana = "lineas") {
+grafico_temporal <- function(df, tipo_grafico, clasif_casos, pob_df, anios_sel, vista_semana = "lineas") {
   
-  etiq_eje_x <- switch(agrupacion, semana = "Semana epidemiológica", anio = "Año")
+  etiq_eje_x <- switch(tipo_grafico, semana = "Semana epidemiológica", anio = "Año")
   
   # gráfico de barras por año
   
-  if (agrupacion == "anio") {
+  if (tipo_grafico == "anio") {
     
-    df_serie <- preparar_serie_temporal(df, agrupacion)
+    df_serie <- preparar_serie_temporal(df, tipo_grafico)
     
-    valores <- switch(tipo_casos,
+    valores <- switch(clasif_casos,
                       casos = df_serie$casos,
                       confirmados = df_serie$confirmados,
                       probables = df_serie$probables
     )
     
-    label_y <- switch(tipo_casos, casos = "Total notificado", confirmados = "Confirmados", probables = "Probables")
+    label_y <- switch(clasif_casos, casos = "Total notificado", confirmados = "Confirmados", probables = "Probables")
     
     highchart() |>
       hc_chart(type = "column") |>
@@ -82,12 +84,12 @@ grafico_temporal <- function(df, agrupacion, tipo_casos, pob_df, anios_sel, vist
       complete(periodo = 1:tope_anio, fill = list(casos = 0, confirmados = 0)) |>
       arrange(periodo)
     
-    valores <- switch(tipo_casos,
+    valores <- switch(clasif_casos,
                       casos = df_anio$casos,
                       confirmados = df_anio$confirmados,
                       probables = df_anio$probables
     )
-    label_y <- switch(tipo_casos, casos = "Total notificado", confirmados = "Confirmados", probables = "Probables")
+    label_y <- switch(clasif_casos, casos = "Total notificado", confirmados = "Confirmados", probables = "Probables")
     
     highchart() |>
       hc_chart(type = "column") |>
@@ -109,7 +111,7 @@ grafico_temporal <- function(df, agrupacion, tipo_casos, pob_df, anios_sel, vist
     
     anios_presentes <- sort(unique(df$ANIO_MINIMO))
     tope <- max(max(df$SEPI_MINIMA, na.rm = TRUE), 52)
-    label_y <- switch(tipo_casos, casos = "Total notificado", confirmados = "Confirmados", probables = "Probables")
+    label_y <- switch(clasif_casos, casos = "Total notificado", confirmados = "Confirmados", probables = "Probables")
     
     hc <- highchart() |>
       hc_chart(type = "line") |>
@@ -137,7 +139,7 @@ grafico_temporal <- function(df, agrupacion, tipo_casos, pob_df, anios_sel, vist
         complete(periodo = 1:tope_anio, fill = list(casos = 0, confirmados = 0, probables = 0)) |>
         arrange(periodo)
       
-      valores <- switch(tipo_casos,
+      valores <- switch(clasif_casos,
                         casos = df_anio$casos,
                         confirmados = df_anio$confirmados,
                         probables =df_anio$probables
@@ -151,9 +153,9 @@ grafico_temporal <- function(df, agrupacion, tipo_casos, pob_df, anios_sel, vist
 
 # value boxes ------------------------------------------------------------------
 
-calcular_resumen_tiempo <- function(df, agrupacion, pob_df, anios_sel) {
+calcular_resumen_tiempo <- function(df, tipo_grafico, pob_df, anios_sel) {
   
-  df_serie <- preparar_serie_temporal(df, agrupacion)
+  df_serie <- preparar_serie_temporal(df, tipo_grafico)
   
   total <- sum(df_serie$casos)
   

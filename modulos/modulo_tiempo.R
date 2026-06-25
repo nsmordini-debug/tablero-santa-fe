@@ -67,6 +67,7 @@ moduloTiempoUI <- function(id) {
         )
       ),
       
+<<<<<<< HEAD
       nav_panel(
         title = "Corredor Endémico",
         layout_columns(
@@ -80,6 +81,42 @@ moduloTiempoUI <- function(id) {
             p("El corredor calcula los cuartiles históricos excluyendo el año seleccionado como actual."),
             uiOutput(ns("selector_anio_actual"))
           )
+=======
+      card(
+        card_header("Distribución temporal"),
+        highchartOutput(ns("grafico_tiempo"), height = "450px")
+      ),
+      card(
+        card_header("Opciones gráfico"),
+        radioButtons(
+          inputId = ns("tipo_grafico"),
+          label = "Tipo de gráfico",
+          choices = c("Semana epidemiológica" = "semana", "Año" = "anio"),
+          selected = "semana"
+        ),
+        
+        conditionalPanel(
+          condition = "input.tipo_grafico == 'semana' && output.un_solo_anio",
+          ns = ns,
+          radioButtons(
+            inputId = ns("vista_semana"),
+            label = "Mostrar",
+            choices = c("Comparar años (líneas)" = "lineas", "Un año (barras)"= "barras"),
+            selected = "lineas"
+          )
+        ),
+        # radioButtons(
+        #   inputId  = ns("metrica"),
+        #   label    = "Mostrar como",
+        #   choices  = c("Número de casos" = "casos", "Tasa x 100.000 hab." = "tasa"),
+        #   selected = "casos"
+        # )
+        radioButtons(
+          inputId = ns("clasif_casos"),
+          label = "Tipo de casos",
+          choices = c("Total notificado" = "casos", "Confirmados" = "confirmados", "Probables" = "probables"),
+          selected = "casos"
+>>>>>>> d217e2f6ee23d6b3dacf02877707f0b812504fc3
         )
       )
     )
@@ -91,19 +128,50 @@ moduloTiempoServer <- function(id, base_filtrada, anios_seleccionados, base_sin_
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
+<<<<<<< HEAD
     # Base según se elija por año o semana
+=======
+    # Value boxes --------------------------------------------------------------
+    
+    resumen <- reactive({
+      calcular_resumen_tiempo(
+        base_filtrada(),
+        input$tipo_grafico,
+        poblacion,    
+        anios_seleccionados()
+      )
+    })
+    
+    output$vb_total <- renderText({
+      resumen()$total
+    })
+    
+    output$vb_tasa <- renderText({
+      resumen()$tasa
+    })
+    
+    output$vb_periodo_max <- renderText({
+      resumen()$periodo_max
+    })
+    
+    # base según se eliga por año o semana
+>>>>>>> d217e2f6ee23d6b3dacf02877707f0b812504fc3
     base_activa <- reactive({
-      if (input$agrupacion == "anio") base_sin_anio() else base_filtrada()
+      if (input$tipo_grafico == "anio") base_sin_anio() else base_filtrada()
     })
     
     # Value boxes cálculo único unificado 
     resumen <- reactive({
+<<<<<<< HEAD
       calcular_resumen_tiempo(
         base_activa(), 
         input$agrupacion, 
         poblacion, 
         anios_seleccionados()
       )
+=======
+      calcular_resumen_tiempo(base_activa(), input$tipo_grafico, poblacion, anios_seleccionados())
+>>>>>>> d217e2f6ee23d6b3dacf02877707f0b812504fc3
     })
     
     output$vb_total <- renderText({ resumen()$total })
@@ -120,8 +188,8 @@ moduloTiempoServer <- function(id, base_filtrada, anios_seleccionados, base_sin_
     output$grafico_tiempo <- renderHighchart({
       grafico_temporal(
         base_activa(),
-        input$agrupacion,
-        input$tipo_casos,
+        input$tipo_grafico,
+        input$clasif_casos,
         poblacion,
         anios_seleccionados(),
         input$vista_semana   

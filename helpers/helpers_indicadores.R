@@ -61,6 +61,7 @@ calcular_tabla_indicadores <- function(df, pob_df, anios_seleccionados) {
     summarise(
       Total = n(),
       Confirmados = sum(CLASIFICACION=="CONFIRMADO",na.rm = TRUE),
+      Probables = sum(CLASIFICACION=="PROBABLE",na.rm = TRUE),
       Fallecidos = sum(FALLECIDO == "SI", na.rm = TRUE)
     ) |>
     mutate(
