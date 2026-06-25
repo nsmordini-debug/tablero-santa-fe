@@ -16,9 +16,9 @@ ui <- page_navbar(
   
   header = tagList(
     useShinyjs(),                            
-    # tags$head(
-    #   tags$link(rel = "stylesheet", type = "text/css", href = "estilos.css")
-    # )
+    tags$head(
+      tags$link(rel = "stylesheet", type = "text/css", href = "estilos.css")
+    )
   ),
   
   theme = bs_theme(bootswatch = "zephyr") |> #flatly, minty, yeti
@@ -39,42 +39,49 @@ ui <- page_navbar(
   sidebar = sidebar(
     width = 260,
     title = "Filtros",
+    id = "sidebar",
     
-    selectInput(
-      inputId = "filtro_evento",
-      label= "Evento",
-      choices = eventos_disponibles,
-      selected = "Coqueluche"
-    ),
-    
-    selectInput(
-      inputId = "filtro_anio",
-      label = "Año",
-      choices = anios_disponibles,
-      selected = 2025, #anios_disponibles,   
-      multiple = TRUE
-    ),
-    
-    pickerInput(
-      inputId = "filtro_depto",
-      label = "Departamento",
-      choices = deptos_disponibles,
-      selected = deptos_disponibles,  
-      multiple = TRUE,
-      options = list(
-        `actions-box` = TRUE,
-        `select-all-text` = "Seleccionar todos",
-        `deselect-all-text` = "Deseleccionar todos",
-        `none-selected-text`= "— Sin filtro (todos) —",
-        `selected-text-format` = "count > 2",  
-        `count-selected-text` = "{0} seleccionados",
-        container = "body"
+
+      #helpText("Seleccione el evento"), 
+      selectInput(
+        inputId = "filtro_evento",
+        #label= "Evento",
+        label    = tagList("Evento ", tags$br(),tags$small(class = "text-muted", "Seleccione el evento")),
+        choices = eventos_disponibles,
+        selected = "Coqueluche"
+      ),
+      
+      selectInput(
+        inputId = "filtro_anio",
+        #label = "Año",
+        label   = tagList("Año ", tags$br(), tags$small(class = "text-muted", "Seleccione uno o más años")),
+        choices = anios_disponibles,
+        selected = 2025, #anios_disponibles,   
+        multiple = TRUE
+      ),
+      
+      uiOutput("ayuda_depto"),
+      pickerInput(
+        inputId = "filtro_depto",
+        label = NULL, #"Departamento",
+        choices = deptos_disponibles,
+        selected = deptos_disponibles,  
+        multiple = TRUE,
+        options = list(
+          `actions-box` = TRUE,
+          `select-all-text` = "Seleccionar todos",
+          `deselect-all-text` = "Deseleccionar todos",
+          `none-selected-text`= "— Sin filtro (todos) —",
+          `selected-text-format` = "count > 2",  
+          `count-selected-text` = "{0} seleccionados",
+          container = "body"
+        )
+      ),
+      conditionalPanel(
+        condition = "input.navbar == 'Indicadores'",
+        downloadButton("descargar_tabla", "Descargar tabla (.xlsx)", class = "btn-sm")
       )
-    ),
-    conditionalPanel(
-      condition = "input.navbar == 'Indicadores'",
-      downloadButton("descargar_tabla", "Descargar tabla (.xlsx)", class = "btn-sm")
-    )
+    
   ),
   
   # pestañas (una para cada módulo) --------------------------------------------

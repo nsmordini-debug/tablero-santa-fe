@@ -1,29 +1,29 @@
 
 server <- function(input, output, session) {
-
+  
   # reactive global ------------------------------------------------------------
   # (dataframe filtrado según los inputs del sidebar evento + año + depto)
-
+  
   base_filtrada <- reactive({
-
+    
     df <- base_eventos
     
     # filtro evento
     df <- df |> filter(EVENTO == input$filtro_evento)
-  
+    
     # filtro año
     if (!is.null(input$filtro_anio)) {
       df <- df |> filter(ANIO_MINIMO %in% input$filtro_anio)
     }
-
+    
     # filtro departamento
     if (!is.null(input$filtro_depto)) {
       df <- df |> filter(DEPARTAMENTO_RESIDENCIA %in% input$filtro_depto)
     }
-
+    
     df
   })
-
+  
   # reactives para pestañas específicas  -------------------------------------
   # (dataframe filtrado según los inputs disponibles en cada pestaña)
   
@@ -59,7 +59,7 @@ server <- function(input, output, session) {
   
   # reactive auxiliares ----------------------------------------------------------
   #(porque los inputs globales no se pueden pasar como tales a los módulos)
-
+  
   # para pestaña lugar
   depto_seleccionado <- reactive({
     deptos <- input$filtro_depto
@@ -68,13 +68,13 @@ server <- function(input, output, session) {
     }
     deptos # nombre del depto único seleccionado
   })
-
+  
   # para pestañas indicadores, lugar y tiempo
   anios_seleccionados <- reactive({
     as.numeric(input$filtro_anio)
   })
   
- 
+  
   # observers ------------------------------------------------------------------
   
   # para ocultar input de departamento en pestaña indicadores
@@ -83,6 +83,25 @@ server <- function(input, output, session) {
       shinyjs::hide("filtro_depto")
     } else {
       shinyjs::show("filtro_depto")
+    }
+  })
+  
+  
+  # para ocultar el sidebar en la pestaña "acerca de"
+  
+  observe({
+    if (input$navbar == "Acerca de") {
+      shinyjs::addClass(selector = ".sidebar", class = "oculto")
+    } else {
+      shinyjs::removeClass(selector = ".sidebar", class = "oculto")
+    }
+  })
+  
+  observe({
+    if (input$navbar == "Acerca de") {
+      toggle_sidebar("sidebar", open = FALSE, session = session)
+    } else {
+      toggle_sidebar("sidebar", open = TRUE, session = session)
     }
   })
   
@@ -120,14 +139,46 @@ server <- function(input, output, session) {
     }
   })
   
-
+  # para armar los labels de los inputs de las distintas pestañas --------------
+  
+  observe({
+    pestaña <- input$navbar
+    
+    # Año 
+    texto_anio <- switch(pestaña,
+                         "Indicadores" = "Seleccione uno o más años",
+                         "Tiempo" = "Seleccione uno o más años, para comparar",
+                         "Seleccione uno o más años" # acá es donde caen las pestañas por default si no se indica antes nada
+    )
+    
+    updateSelectInput(session, "filtro_anio",
+                      label = tagList("Año ", tags$br(), tags$small(class = "text-muted", texto_anio))
+    )
+    
+    # Departamento 
+    output$ayuda_depto <- renderUI({
+      if (input$navbar == "Indicadores") {
+        return(NULL)  
+        }
+      
+      texto_depto <- switch(input$navbar,
+                            "Lugar" = "Seleccione uno para ver localidades, o todos para la provincia",
+                            "Seleccione uno, varios o todos"
+      )
+      tags$label(class = "control-label",
+                 tagList("Departamento ", tags$br(), tags$small(class = "text-muted", texto_depto)))
+    })
+    
+  })
+  
+  
   # módulos --------------------------------------------------------
-
+  
   moduloIndicadoresServer("indicadores", base_sin_filtro_depto,anios_seleccionados)
   moduloPersonaServer("persona", base_filtrada)
   moduloLugarServer("lugar", base_filtrada, depto_seleccionado,anios_seleccionados)
   moduloTiempoServer("tiempo",base_filtrada,anios_seleccionados,base_sin_anio)
-
+  
   
   # descargas -------------------------------------------------------------
   
