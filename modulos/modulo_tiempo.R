@@ -297,7 +297,7 @@ moduloTiempoServer <- function(id, base_filtrada, anios_seleccionados, base_sin_
     ggplotly(corredorEndemico)
     
     
-    # renderiza ggplotly en shinyapp
+    ## renderiza ggplotly en shinyapp
     
     Biblioteca (brillante)
     
