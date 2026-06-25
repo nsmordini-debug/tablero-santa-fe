@@ -1,10 +1,17 @@
 
 ui <- page_navbar(
   
+  # title = tagList(
+  #   img(src = "LogoColor.png", height = "30px", style = "margin-right: 8px;"),
+  #   "Tablero Epidemiológico"
+  # ),
+  
   title = tagList(
-    img(src = "LogoColor.png", height = "30px", style = "margin-right: 8px;"),
-    "Tablero Epidemiológico"
+    img(src = "LogoColor.png", height = "40px", style = "margin-right: 12px;"),
+    tags$span("Tablero Epidemiológico", 
+              style = "font-weight: 400; opacity: 0.85;")
   ),
+  
   id = "navbar",
   
   header = tagList(
@@ -14,7 +21,7 @@ ui <- page_navbar(
     # )
   ),
   
-  theme = bs_theme(bootswatch = "flatly") |>
+  theme = bs_theme(bootswatch = "zephyr") |> #flatly, minty, yeti
     bs_add_rules("
       .value-boxes .value-box-value {
         font-size: 1.7rem !important;
