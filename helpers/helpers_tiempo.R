@@ -9,6 +9,8 @@ preparar_serie_temporal <- function(df, tipo_grafico) {
   
   max_semana <- max(max(df$SEPI_MINIMA, na.rm = TRUE), 52) # ver si hay una mejor forma...
   
+  rango_periodo <- if (tipo_grafico == "semana") 1:max_semana else anios_disponibles
+  
   df |>
     group_by(periodo = .data[[columna_periodo]]) |>
     summarise(
@@ -16,8 +18,8 @@ preparar_serie_temporal <- function(df, tipo_grafico) {
       confirmados = sum(CLASIFICACION =="CONFIRMADO",na.rm = TRUE),
       probables = sum(CLASIFICACION == "PROBABLE", na.rm = TRUE),
       .groups = "drop") |> 
-    complete(periodo = if (tipo_grafico == "semana") 1:max_semana else unique(periodo),
-             fill = list(casos = 0, confirmados = 0)) |>
+    complete(periodo = rango_periodo,
+             fill = list(casos = 0, confirmados = 0, probables = 0)) |>
     arrange(periodo)
 }
 

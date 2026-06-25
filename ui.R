@@ -9,9 +9,9 @@ ui <- page_navbar(
   
   header = tagList(
     useShinyjs(),                            
-    tags$head(
-      tags$link(rel = "stylesheet", type = "text/css", href = "estilos.css")
-    )
+    # tags$head(
+    #   tags$link(rel = "stylesheet", type = "text/css", href = "estilos.css")
+    # )
   ),
   
   theme = bs_theme(bootswatch = "flatly") |>
@@ -21,6 +21,9 @@ ui <- page_navbar(
       }
       .value-boxes .value-box-showcase {
         font-size: 1.1rem !important;
+      }
+      .value-boxes {
+        margin-bottom: -20px; /*p disminuir espacio dp de los vb*/
       }
       "),
   

@@ -110,17 +110,21 @@ Módulos
 
 ### Módulo Tiempo
 
--	El módulo recibe como argumento el reactive base_filtrada(), el reactive anios_seleccionados() y un reactive con la base filtrada solo por evento y departamento (base_sin_anio(), para hacer el gráfico por años).
--	La UI del módulo contiene los inputs 
-   -	Tipo de gráfico (tipo_grafico), para elegir entre gráfico comparando años o semanas epidemiológicas
-   -	Mostrar (vista_semana), para elegir entre gráfico de líneas, que permite comparar distintos años, o de barra para ver un único año. 
-   -	Tipo de casos (clasif_casos), para elegir entre total notificados, confirmados y probables
--	En el server del módulo, según tipo_gráfico, se llamará a la función helper correspondiente. Según mostrar_datos se generará el gráfico correspondiente. Ese será el output principal.
--	Además, se generarán los outputs para los valueboxes 
+-	El módulo recibe como argumentos el reactive base_filtrada(), anios_seleccionados() y una base filtrada solo por evento y departamento, sin filtrar por año (base_sin_anio()), necesaria para el gráfico agrupado por año.
+-  La UI del módulo contiene los inputs:
+   -	Tipo de gráfico (tipo_grafico): para elegir entre distribución por semana epidemiológica o por año.
+   -	Mostrar (vista_semana): visible solo cuando la agrupación es "semana" y hay un único año seleccionado (mediante conditionalPanel). Permite elegir entre comparar varios años con líneas, o ver un solo año con barras.
+   -	Tipo de casos (tipo_casos): para elegir entre total notificado, confirmados o probables.
+-  En el server del módulo, un reactive interno (base_activa()) decide qué base usar: base_sin_anio() si la agrupación es "año" (para no perder años por el filtro global), o base_filtrada() en cualquier otro caso. Según tipo_grafico y vista_semana, la función helper grafico_temporal() genera el gráfico correspondiente:
+   -	tipo_grafico "año": barras con todos los años disponibles.
+   -	tipo_grafico "semana" + vista "barras": barras de un único año, completando con 0 las semanas sin casos.
+   -	tipo_grafico "semana" + vista "líneas": una línea por cada año seleccionado, para comparar la distribución estacional entre años.
+-  En todos los casos, tipo_casos determina si se grafica el total notificado, los confirmados o los probables. Ese gráfico es el output principal.
+-  Además, se generan los outputs para los value boxes (total de casos, tasa de incidencia acumulada, período con mayor carga), calculados con calcular_resumen_tiempo().
 
 ## Diseño UI
 
-Se usa la librería bslib para generar un layout con navbar superior, donde se ubicarán las pestañas correspondientes a cada módulo, un sidebar donde están los inputs glogales, y un panel central donde se muestran los outputs y filtros específicos de cada módulo.
+Se usa la librería bslib para generar un layout con navbar superior, donde se ubican las pestañas correspondientes a cada módulo, un sidebar donde están los inputs glogales, y un panel central donde se muestran los outputs y filtros específicos de cada módulo.
 
 ## Decisiones de diseño 
 
