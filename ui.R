@@ -94,5 +94,14 @@ ui <- page_navbar(
     title = "Tiempo",
     icon = icon("clock"),
     moduloTiempoUI("tiempo")
+  ),
+  
+  nav_panel(
+    title = "Acerca de",
+    icon = icon("circle-info"),
+    card(
+      card_header("Acerca de este tablero"),
+      includeMarkdown("README.md")
+    )
   )
 )
