@@ -118,7 +118,7 @@ grafico_temporal <- function(df, tipo_grafico, clasif_casos, pob_df, anios_sel, 
       hc_xAxis(categories = as.character(1:tope), title = list(text = etiq_eje_x)) |>
       hc_yAxis(title = list(text = label_y), min = 0) |>
       hc_tooltip(formatter = JS("function() {
-      return 'Semana <b>' + this.point.category + '</b><br/>' + this.series.name + ': <b>' + this.y + '</b>'
+      return 'Semana <b>' + this.point.category + '</b><br/>Casos ' + this.series.name + ': <b>' + this.y + '</b>'
     }"))
     
     semana_actual <- as.integer(format(Sys.Date(), "%V"))
