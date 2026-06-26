@@ -151,6 +151,84 @@ grafico_temporal <- function(df, tipo_grafico, clasif_casos, pob_df, anios_sel, 
   }
 }
 
+# gráfico corredor -------------------------------------------------------------
+# (función adaptada de https://gist.github.com/agsantoro/3fb13e2669bf4248e3b2500531f1daca)
+
+corredor_endemico <- function(df, col_anio, col_semana,
+                              col_clasificacion = NULL, clasif_incluidas = NULL,
+                              semana_hasta = NULL) {
+  
+  
+  if (!is.null(col_clasificacion) && !is.null(clasif_incluidas)) {
+    df <- df |> filter(.data[[col_clasificacion]] %in% clasif_incluidas)
+  }
+  
+  anio_actual <- max(df[[col_anio]], na.rm = TRUE)
+  
+  # Si no se especifica, usar la semana actual del calendario como tope
+  if (is.null(semana_hasta)) {
+    semana_hasta <- as.integer(format(Sys.Date(), "%V"))
+  }
+  
+  historico <- df |> filter(.data[[col_anio]] < anio_actual)
+  actual    <- df |> filter(.data[[col_anio]] == anio_actual)
+  
+  # Histórico: siempre se completa hasta 52 (años ya cerrados)
+  historico_semanal <- historico |>
+    group_by(anio = .data[[col_anio]], semana = .data[[col_semana]]) |>
+    summarise(casos = n(), .groups = "drop") |>
+    complete(anio = unique(historico[[col_anio]]), semana = 1:52,
+             fill = list(casos = 0))
+  
+  # Año actual: se completa solo hasta semana_hasta
+  actual_semanal <- actual |>
+    group_by(semana = .data[[col_semana]]) |>
+    summarise(casos = n(), .groups = "drop") |>
+    complete(semana = 1:semana_hasta, fill = list(casos = 0))
+  
+  corredor <- historico_semanal |>
+    group_by(semana) |>
+    summarise(
+      q25     = quantile(casos, 0.25, na.rm = TRUE),
+      q50     = quantile(casos, 0.50, na.rm = TRUE),
+      q75     = quantile(casos, 0.75, na.rm = TRUE),
+      maximo  = max(casos, na.rm = TRUE),
+      .groups = "drop"
+    ) |>
+    left_join(actual_semanal, by = "semana")
+  
+  corredor <- corredor |>
+    mutate(
+      zona = case_when(
+        casos < q25 ~ "Éxito",
+        casos >= q25 & casos < q50 ~ "Seguridad",
+        casos >= q50 & casos < q75 ~ "Alerta",
+        casos >= q75 ~ "Epidemia",
+        TRUE ~ NA_character_
+      )
+    )
+  
+  p <- ggplot(corredor, aes(x = semana)) +
+    geom_ribbon(aes(ymin = 0, ymax = q25), fill = "#b7e4c7", alpha = 0.8) +
+    geom_ribbon(aes(ymin = q25, ymax = q50), fill = "#fff3b0", alpha = 0.8) +
+    geom_ribbon(aes(ymin = q50, ymax = q75), fill = "#fcbf49", alpha = 0.8) +
+    geom_ribbon(aes(ymin = q75, ymax = maximo), fill = "#e63946", alpha = 0.7) +
+    geom_line(aes(y = casos), linewidth = 1.2, color = "black") +
+    geom_point(aes(y = casos), size = 2, color = "black") +
+    labs(
+      title = "Corredor endémico",
+      subtitle = paste("Año:", anio_actual, "— Histórico:",
+                       min(historico[[col_anio]], na.rm = TRUE), "-",
+                       anio_actual - 1),
+      x = "Semana epidemiológica",
+      y = "Casos"
+    ) +
+    scale_x_continuous(breaks = seq(1, 52, by = 4)) +
+    theme_minimal()
+  
+  ggplotly(p)
+}
+
 # value boxes ------------------------------------------------------------------
 
 calcular_resumen_tiempo <- function(df, tipo_grafico, pob_df, anios_sel) {
