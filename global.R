@@ -15,6 +15,7 @@ library(shinyWidgets)
 library(stringr)
 library(sf)
 library(openxlsx)
+library(plotly)
 
 # helpers ----------------------------------------------------------------------
 

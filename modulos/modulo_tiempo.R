@@ -35,37 +35,36 @@ moduloTiempoUI <- function(id) {
       
       card(
         card_header("Distribución temporal"),
-        highchartOutput(ns("grafico_tiempo"), height = "450px")
+        conditionalPanel(
+          condition = "input.vista_semana == 'corredor'",
+          ns = ns,
+          plotlyOutput(ns("grafico_corredor"), height = "450px")
+        ),
+        conditionalPanel(
+          condition = "input.vista_semana != 'corredor'",
+          ns = ns,
+          highchartOutput(ns("grafico_tiempo"), height = "450px")
+        )
       ),
       card(
         card_header("Opciones gráfico"),
         radioButtons(
-          inputId = ns("tipo_grafico"),
-          label = "Tipo de gráfico",
-          choices = c("Semana epidemiológica" = "semana", "Año" = "anio"),
+          inputId  = ns("tipo_grafico"),
+          label    = "Tipo de gráfico",
+          choices  = c("Semana epidemiológica" = "semana", "Año" = "anio"),
           selected = "semana"
         ),
         
         conditionalPanel(
           condition = "input.tipo_grafico == 'semana' && output.un_solo_anio",
           ns = ns,
-          radioButtons(
-            inputId = ns("vista_semana"),
-            label = "Mostrar",
-            choices = c("Comparar años (líneas)" = "lineas", "Un año (barras)"= "barras"),
-            selected = "lineas"
-          )
+          uiOutput(ns("selector_vista_semana"))   # <-- ahora es un placeholder
         ),
-        # radioButtons(
-        #   inputId  = ns("metrica"),
-        #   label    = "Mostrar como",
-        #   choices  = c("Número de casos" = "casos", "Tasa x 100.000 hab." = "tasa"),
-        #   selected = "casos"
-        # )
+        
         radioButtons(
-          inputId = ns("clasif_casos"),
-          label = "Tipo de casos",
-          choices = c("Total notificado" = "casos", "Confirmados" = "confirmados", "Probables" = "probables"),
+          inputId  = ns("clasif_casos"),
+          label    = "Tipo de casos",
+          choices  = c("Total notificado" = "casos", "Confirmados" = "confirmados", "Probables" = "probables"),
           selected = "casos"
         )
       )
@@ -77,6 +76,8 @@ moduloTiempoUI <- function(id) {
 
 moduloTiempoServer <- function(id, base_filtrada, anios_seleccionados,base_sin_anio) {
   moduleServer(id, function(input, output, session) {
+    
+    ns <- session$ns
     
     # Value boxes --------------------------------------------------------------
     
@@ -118,15 +119,50 @@ moduloTiempoServer <- function(id, base_filtrada, anios_seleccionados,base_sin_a
     outputOptions(output, "un_solo_anio", suspendWhenHidden = FALSE)
     
     
+    # render ui para generar los radiobuttons dinámicamente
+    output$selector_vista_semana <- renderUI({
+      
+      opciones <- c("Comparar años (líneas)" = "lineas", "Un año (barras)" = "barras")
+      
+      if (length(anios_seleccionados()) == 1 &&
+          anios_seleccionados()[1] == max(anios_disponibles)) {
+        opciones <- c(opciones, "Corredor endémico" = "corredor")
+      }
+      
+      radioButtons(
+        inputId  = ns("vista_semana"),
+        label    = "Mostrar",
+        choices  = opciones,
+        selected = "lineas"
+      )
+    })
+    
     # grafico
+    
     output$grafico_tiempo <- renderHighchart({
+      req(input$vista_semana)
+      req(input$vista_semana != "corredor")
+      
       grafico_temporal(
         base_activa(),
         input$tipo_grafico,
         input$clasif_casos,
         poblacion,
         anios_seleccionados(),
-        input$vista_semana   
+        input$vista_semana
+      )
+    })
+    
+    # gráfico coredor
+    output$grafico_corredor <- renderPlotly({
+      req(input$vista_semana == "corredor")
+      
+      corredor_endemico(
+        base_sin_anio(),
+        col_anio = "ANIO_MINIMO",
+        col_semana = "SEPI_MINIMA",
+        col_clasificacion = "CLASIFICACION",
+        clasif_incluidas = c("CONFIRMADO","PROBABLE")
       )
     })
     
