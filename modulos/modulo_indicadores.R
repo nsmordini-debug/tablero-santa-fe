@@ -11,13 +11,13 @@ moduloIndicadoresUI <- function(id) {
       layout_columns(
         height = "100px", 
         value_box(
-          title   = "Total de casos",
-          value   = textOutput(ns("vb_total")),
+          title = "Total de casos",
+          value = textOutput(ns("vb_total")),
           showcase = icon("list-ol")
         ),
         value_box(
-          title   = "Confirmados",
-          value   = textOutput(ns("vb_confirmados")),
+          title = "Confirmados",
+          value = textOutput(ns("vb_confirmados")),
           showcase = icon("circle-check") 
         ),
         # value_box( # aguanta bien hasta 3, después se desacomoda...
@@ -27,8 +27,8 @@ moduloIndicadoresUI <- function(id) {
         #   showcase_layout = "left center" 
         # ),
         value_box(
-          title   = "Fallecidos",
-          value   = textOutput(ns("vb_letalidad")),
+          title = "Fallecidos",
+          value = textOutput(ns("vb_letalidad")),
           showcase = icon("heart-pulse")#percent
         )
       )
@@ -53,7 +53,7 @@ moduloIndicadoresUI <- function(id) {
 
 # server -----------------------------------------------------------------------
 
-moduloIndicadoresServer <- function(id, base_sin_filtro_depto,anios_seleccionados) {
+moduloIndicadoresServer <- function(id, base_sin_filtro_depto,anios_seleccionados,evento_seleccionado) {
   moduleServer(id, function(input, output, session) {
     
     # value boxes --------------------------------------------------------------
@@ -82,7 +82,8 @@ moduloIndicadoresServer <- function(id, base_sin_filtro_depto,anios_seleccionado
     # Tabla ---------------------------------------------------------------------
     
     df_tabla <- reactive({
-      calcular_tabla_indicadores(base_sin_filtro_depto(), poblacion, anios_seleccionados())
+      req(evento_seleccionado())
+      calcular_tabla_indicadores(base_sin_filtro_depto(), poblacion, anios_seleccionados(), evento_seleccionado())
     })
     
     output$tabla <- renderReactable({

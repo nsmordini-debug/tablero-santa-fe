@@ -74,6 +74,11 @@ server <- function(input, output, session) {
     as.numeric(input$filtro_anio)
   })
   
+  # para indicadores
+  evento_seleccionado <- reactive({
+    as.character(input$filtro_evento)
+  })
+  
   
   # observers ------------------------------------------------------------------
   
@@ -174,16 +179,14 @@ server <- function(input, output, session) {
   
   # módulos --------------------------------------------------------
   
-  moduloIndicadoresServer("indicadores", base_sin_filtro_depto,anios_seleccionados)
+  df_tabla_indicadores <- moduloIndicadoresServer("indicadores", base_sin_filtro_depto, anios_seleccionados, evento_seleccionado)
   moduloPersonaServer("persona", base_filtrada)
   moduloLugarServer("lugar", base_filtrada, depto_seleccionado,anios_seleccionados)
   moduloTiempoServer("tiempo",base_filtrada,anios_seleccionados,base_sin_anio)
   
   
   # descargas -------------------------------------------------------------
-  
-  df_tabla_indicadores <- moduloIndicadoresServer("indicadores", base_sin_filtro_depto, anios_seleccionados)
-  
+
   output$descargar_tabla <- downloadHandler(
     filename = function() {
       paste0("indicadores_tablero_", Sys.Date(), ".xlsx")

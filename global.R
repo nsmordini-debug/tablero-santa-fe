@@ -85,3 +85,8 @@ tabla_depos <- table(base_eventos$DEPARTAMENTO_RESIDENCIA) %>%
   as.data.frame() %>%
   select(Var1) %>%
   rename("Departamento"="Var1")
+
+# clasificación eventos --------------------------------------------------------
+
+eventos_sin_confirmacion <- c("Accidente potencialmente rábico (APR)", "Alacranismo")
+eventos_con_confirmacion <- c("Coqueluche", "Fiebre Hemorrágica Argentina (FHA)","Hantavirosis", "Leptospirosis", "Psitacosis")

@@ -33,24 +33,24 @@ preparar_poblacion <- function(pob_df, anios_seleccionados) {
 # función para armar la tabla de indicarores -----------------------------------
 # (calcula los valores de cada columna para cada depto y para el total, y los une)
 
-calcular_tabla_indicadores <- function(df, pob_df, anios_seleccionados) {
+calcular_tabla_indicadores <- function(df, pob_df, anios_seleccionados, evento_seleccionado) {
   
   pob <- preparar_poblacion(pob_df, anios_seleccionados)
   
   por_depto <- df |>
     group_by(DEPARTAMENTO_RESIDENCIA) |>
     summarise(
-      Total = n(),
-      Confirmados = sum(CLASIFICACION=="CONFIRMADO",na.rm = TRUE),
-      Probables = sum(CLASIFICACION=="PROBABLE",na.rm = TRUE),
-      Fallecidos = sum(FALLECIDO == "SI",na.rm = TRUE),
+      Total       = n(),
+      Confirmados = sum(CLASIFICACION == "CONFIRMADO", na.rm = TRUE),
+      Probables   = sum(CLASIFICACION == "PROBABLE", na.rm = TRUE),
+      Fallecidos  = sum(FALLECIDO == "SI", na.rm = TRUE),
       .groups = "drop"
     ) |>
     mutate(
-      `% Positiv.` = if_else(Total > 0, round(Confirmados/ Total*100, 1),NA_real_),
-      `% Letalidad` = if_else(Confirmados > 0,round(Fallecidos / Confirmados * 100, 1), NA_real_)
+      `% Positiv.`  = if_else(Total > 0, round(Confirmados / Total * 100, 1), NA_real_),
+      `% Letalidad` = if_else(Confirmados > 0, round(Fallecidos / Confirmados * 100, 1), NA_real_)
     ) |>
-    left_join(pob,by = c("DEPARTAMENTO_RESIDENCIA" = "nombre_depto")) |>
+    left_join(pob, by = c("DEPARTAMENTO_RESIDENCIA" = "nombre_depto")) |>
     mutate(`Tasa x 100.000 hab.` = round(Confirmados / poblacion * 100000, 1)) |>
     select(-poblacion) |>
     arrange(DEPARTAMENTO_RESIDENCIA)
@@ -59,76 +59,83 @@ calcular_tabla_indicadores <- function(df, pob_df, anios_seleccionados) {
   
   fila_total <- df |>
     summarise(
-      Total = n(),
-      Confirmados = sum(CLASIFICACION=="CONFIRMADO",na.rm = TRUE),
-      Probables = sum(CLASIFICACION=="PROBABLE",na.rm = TRUE),
-      Fallecidos = sum(FALLECIDO == "SI", na.rm = TRUE)
+      Total       = n(),
+      Confirmados = sum(CLASIFICACION == "CONFIRMADO", na.rm = TRUE),
+      Probables   = sum(CLASIFICACION == "PROBABLE", na.rm = TRUE),
+      Fallecidos  = sum(FALLECIDO == "SI", na.rm = TRUE)
     ) |>
     mutate(
-      `% Positiv.` = if_else(Total > 0,round(Confirmados / Total * 100, 1),NA_real_),
-      `% Letalidad` = if_else(Confirmados > 0,round(Fallecidos / Confirmados * 100, 1),NA_real_),
-      Departamento = "TOTAL",
-      `Tasa x 100.000 hab.` = round(Confirmados / pob_total * 100000, 1), .before = everything()
+      `% Positiv.`  = if_else(Total > 0, round(Confirmados / Total * 100, 1), NA_real_),
+      `% Letalidad` = if_else(Confirmados > 0, round(Fallecidos / Confirmados * 100, 1), NA_real_),
+      Departamento  = "TOTAL",
+      `Tasa x 100.000 hab.` = round(Confirmados / pob_total * 100000, 1),
+      .before = everything()
     )
   
-  
   por_depto_completo <- tabla_depos |>
-    left_join(por_depto, by = c("Departamento" = "DEPARTAMENTO_RESIDENCIA")) 
+    left_join(por_depto, by = c("Departamento" = "DEPARTAMENTO_RESIDENCIA"))
   
-  bind_rows(por_depto_completo, fila_total)|>
+  tabla_final <- bind_rows(por_depto_completo, fila_total) |>
     mutate(across(where(is.numeric), ~ replace_na(., 0)))
   
-  #browser()
-
+  # --- Selección de columnas según el grupo del evento ------------------------
+  if (evento_seleccionado %in% eventos_sin_confirmacion) {
+    tabla_final <- tabla_final |>
+      select(Departamento, Total, Fallecidos, `% Letalidad`, `Tasa x 100.000 hab.`)
+  }
+  # Si el evento es "con confirmación" (o cualquier otro no listado), se devuelven todas las columnas
+  
+  tabla_final
 }
-
 # función para crear el reactable a partir de la tabla armada con la funcion anterior---------- 
 
 tabla_indicadores <- function(df_tabla) {
+  
+  # prmero todas las columnas posibles
+  columnas_posibles <- list(
+    Departamento = colDef(
+      name = "Departamento",
+      minWidth = 140,
+      sticky   = "left",
+      style = function(value) {
+        if (value == "TOTAL") list(fontWeight = "bold") else NULL
+      },
+      cell = function(value) {
+        if (value == "TOTAL") tags$b(value) else value
+      }
+    ),
+    Total = colDef(align = "center"),
+    Confirmados = colDef(name = "Casos confirm.", align = "center"),
+    Probables = colDef(name = "Casos probab.", align = "center"),
+    `% Positiv.` = colDef(align = "center",
+                          cell = function(value) {
+                            if (is.na(value)) "—" else paste0(value, "%")
+                          }),
+    Fallecidos = colDef(align = "center"),
+    `% Letalidad` = colDef(align = "center",
+                           cell = function(value) {
+                             if (is.na(value)) "—" else paste0(value, "%")
+                           }),
+    `Tasa x 100.000 hab.` = colDef(
+      align = "center",
+      name = "Tasa x 100.000 hab.",
+      cell = function(value) {
+        if (is.na(value)) "—" else value
+      }
+    )
+  )
+  
+  # para tomar solo las que existen según el evento
+  columnas_a_usar <- columnas_posibles[names(columnas_posibles) %in% names(df_tabla)]
+  
   reactable(
     df_tabla,
-    striped = TRUE,
+    striped  = TRUE,
     highlight = TRUE,
     bordered = FALSE,
     compact = TRUE,
     defaultPageSize = 25,
-    columns = list(
-      
-      Departamento = colDef(
-        name = "Departamento",       
-        minWidth = 140,
-        sticky = "left",
-        style = function(value) {
-          if (value == "TOTAL") list(fontWeight = "bold") else NULL
-        },
-        cell = function(value) {
-          if (value == "TOTAL") tags$b(value) else value
-        }
-      ),
-      Total = colDef(align = "center"),
-      
-      Confirmados = colDef(name="Casos confirm.", align = "center"),
-      
-      Probables = colDef(name="Casos probab.", align = "center"),
-      
-      `% Positiv.` = colDef(align = "center",
-                             cell = function(value) {
-                               if (is.na(value)) "—" else paste0(value, "%")
-                             }),
-      Fallecidos = colDef(align = "center"),
-      
-      `% Letalidad` = colDef(align = "center",
-                             cell = function(value) {
-                               if (is.na(value)) "—" else paste0(value, "%")
-                             }),
-      
-      `Tasa x 100.000 hab.`= colDef(
-        align = "center", name = "Tasa x 100.000 hab.",
-        cell  = function(value) {
-          if (is.na(value)) "—" else value
-        }
-      )
-    )
+    columns = columnas_a_usar
   )
 }
 
