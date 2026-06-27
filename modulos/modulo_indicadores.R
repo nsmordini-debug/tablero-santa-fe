@@ -4,7 +4,6 @@ moduloIndicadoresUI <- function(id) {
   ns <- NS(id)
   
   tagList(
-    
     # fila con los value boxes -------------------------------------------------
     div( # dentro de un div par poder asignarles a todos las clases definida en bs_add_rules, en la ui ppal
       class = "value-boxes",
@@ -20,15 +19,9 @@ moduloIndicadoresUI <- function(id) {
           value = textOutput(ns("vb_confirmados")),
           showcase = icon("circle-check") 
         ),
-        # value_box( # aguanta bien hasta 3, después se desacomoda...
-        #   title   = "Fallecidos",
-        #   value   = textOutput(ns("vb_fallecidos")),
-        #   showcase = icon("heart-pulse"),
-        #   showcase_layout = "left center" 
-        # ),
-        value_box(
+        value_box( # aguanta bien hasta 3, después se desacomoda...
           title = "Fallecidos",
-          value = textOutput(ns("vb_letalidad")),
+          value = textOutput(ns("vb_fallecidos")),
           showcase = icon("heart-pulse")#percent
         )
       )
@@ -37,12 +30,10 @@ moduloIndicadoresUI <- function(id) {
     # fila con tabla y mapa ----------------------------------------------------
     layout_columns(
       col_widths = c(8, 4),
-      
       card(
         card_header("Indicadores por departamento"),
-        reactableOutput(ns("tabla"))
+        reactableOutput(ns("tabla_indicadores"))
       ),
-      
       card(
         card_header("Departamentos con casos confirmados"),
         leafletOutput(ns("mapa"), height = "1000px")
@@ -59,7 +50,7 @@ moduloIndicadoresServer <- function(id, base_sin_filtro_depto,anios_seleccionado
     # value boxes --------------------------------------------------------------
     
     resumen <- reactive({
-      calcular_resumen_general(base_sin_filtro_depto())
+      calcular_value_boxes(base_sin_filtro_depto())
     })
     
     output$vb_total <- renderText({resumen()$total})
@@ -70,9 +61,7 @@ moduloIndicadoresServer <- function(id, base_sin_filtro_depto,anios_seleccionado
       paste0(resumen()$confirmados, " (", confirmados_porcentaje_texto, ")")
     })
     
-    #output$vb_fallecidos <- renderText({resumen()$fallecidos})
-    
-    output$vb_letalidad <- renderText({
+    output$vb_fallecidos <- renderText({
       letalidad <- resumen()$letalidad
       letalidad_texto <- if (is.na(letalidad)) "—" else paste0(letalidad, "%")
       paste0(resumen()$fallecidos, " (", letalidad_texto, ")")
@@ -81,13 +70,13 @@ moduloIndicadoresServer <- function(id, base_sin_filtro_depto,anios_seleccionado
     
     # Tabla ---------------------------------------------------------------------
     
-    df_tabla <- reactive({
+    df_tabla_indicadores <- reactive({
       req(evento_seleccionado())
       calcular_tabla_indicadores(base_sin_filtro_depto(), poblacion, anios_seleccionados(), evento_seleccionado())
     })
     
-    output$tabla <- renderReactable({
-      tabla_indicadores(df_tabla())
+    output$tabla_indicadores <- renderReactable({
+      tabla_indicadores(df_tabla_indicadores())
     })
     
     # Mapa ---------------------------------------------------------------------
@@ -95,7 +84,6 @@ moduloIndicadoresServer <- function(id, base_sin_filtro_depto,anios_seleccionado
     output$mapa <- renderLeaflet({
       mapa_deptos_indicadores(base_sin_filtro_depto(), shape_deptos)
     })
-    
-    return(df_tabla) 
+    return(df_tabla_indicadores) 
   })
 }

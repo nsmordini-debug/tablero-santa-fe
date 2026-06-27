@@ -16,6 +16,7 @@ library(stringr)
 library(sf)
 library(openxlsx)
 library(plotly)
+library(markdown)
 
 # helpers ----------------------------------------------------------------------
 

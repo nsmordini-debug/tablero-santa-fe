@@ -81,19 +81,19 @@ Módulos
 ```
 
 ### Módulo Indicadores
-- El módulo recibe como argumento el reactive de la base filtrada por año y evento (`base_sin_filtro_depto`), y el reactive con los años seleccionados, a partir del input global (`anios_seleccionados()`).
+- El módulo recibe como argumento el reactive de la base filtrada por año y evento (`base_sin_filtro_depto`), el reactive con los años seleccionados a partir del input global (`anios_seleccionados()`) y el reactive con el evento seleccionado (`eevnto_seleccionado()`).
 - Para este módulo se oculta el filtro global de departamentos, ya que la idea es mostrar la información de todos juntos.
 - En el server del módulo se llama a las funciones `calcular_tabla_indicadores()` y `mapa_deptos_indicadores()`, que generan la tabla y el gráfico respectivamente, los cuales se renderizan con `renderReactable` y `renderLeaflet`.
 - Además, se generan los outputs para los value boxes (Total de casos, Confirmados, Fallecidos).
 - También se genera un botón de descarga de la tabla (a partir del df devuelto por el módulo, en el server global).
 
 ### Módulo Persona
-- El módulo recibe como argumento el reactive de la base filtrada por año, departamento y evento (`base_filtrada()`), y el reactive `anios_seleccionados()`.
+- El módulo recibe como argumento el reactive de la base filtrada por año, departamento y evento (`base_filtrada()`).
 - La UI del módulo contiene los inputs:
   - Tipo de gráfico (`tipo_grafico`), para elegir entre pirámide para sexo y edad o histograma solo para edad.
   - Mostrar como (`mostrar_como`), para elegir entre nro de casos y porcentaje.
   - Tipo de casos (`clasif_casos`), para elegir entre total notificados, confirmados y probables.
-- En el server del módulo, se prepara el df según `clasif_casos` se haya seleccionado. Según `tipo_grafico`, se llama a la función helper `grafico_sexo_edad()` o `grafico_edad()`, que reciben como argumentos a `base_filtrada()` y el input de `mostrar_como`, con lo cual generan la visualización correspondiente. Ese es el output principal.
+- En el server del módulo, se prepara el df según `clasif_casos` se haya seleccionado. Según `tipo_grafico`, se llama a la función helper `grafico_sexo_edad()` o `grafico_edad()`, que reciben como argumentos a `base_filtrada()` y el input de `mostrar_como`, con lo cual se genera la visualización correspondiente. Ese es el output principal.
 - Además, se generan los outputs para los value boxes (mediana de edad, razón hombre mujer, rango etario más afectado).
 
 ### Módulo Lugar
@@ -106,17 +106,17 @@ Módulos
 
 ### Módulo Tiempo
 
--	El módulo recibe como argumentos el reactive base_filtrada(), anios_seleccionados() y una base filtrada solo por evento y departamento, sin filtrar por año (base_sin_anio()), necesaria para el gráfico agrupado por año.
+-	El módulo recibe como argumentos el reactive `base_filtrada()`, `anios_seleccionados()` y una base filtrada solo por evento y departamento, sin filtrar por año (`base_sin_anio()`), necesaria para el gráfico agrupado por año.
 -  La UI del módulo contiene los inputs:
-   -	Tipo de gráfico (tipo_grafico): para elegir entre distribución por semana epidemiológica o por año.
-   -	Mostrar (vista_semana): visible solo cuando la agrupación es "semana" y hay un único año seleccionado (mediante conditionalPanel). Permite elegir entre comparar varios años con líneas, o ver un solo año con barras.
-   -	Tipo de casos (tipo_casos): para elegir entre total notificado, confirmados o probables.
--  En el server del módulo, un reactive interno (base_activa()) decide qué base usar: base_sin_anio() si la agrupación es "año" (para no perder años por el filtro global), o base_filtrada() en cualquier otro caso. Según tipo_grafico y vista_semana, la función helper grafico_temporal() genera el gráfico correspondiente:
-   -	tipo_grafico "año": barras con todos los años disponibles.
-   -	tipo_grafico "semana" + vista "barras": barras de un único año, completando con 0 las semanas sin casos.
-   -	tipo_grafico "semana" + vista "líneas": una línea por cada año seleccionado, para comparar la distribución estacional entre años.
+   -	Tipo de gráfico (`tipo_grafico`): para elegir entre distribución por semana epidemiológica o por año.
+   -	Mostrar (`vista_semana`): visible solo cuando la agrupación es "semana" y hay un único año seleccionado (mediante conditionalPanel). Permite elegir entre comparar varios años con líneas, o ver un solo año con barras.
+   -	Tipo de casos (`tipo_casos`): para elegir entre total notificado, confirmados o probables.
+-  En el server del módulo, un reactive interno (`base_activa()`) decide qué base usar: `base_sin_anio()` si la agrupación es "año" (para no perder años por el filtro global), o `base_filtrada()` en cualquier otro caso. Según `tipo_grafico` y `vista_semana`, la función helper `grafico_temporal()` genera el gráfico correspondiente:
+   -	tipo de grafico "año": barras con todos los años disponibles.
+   -	tipo de grafico "semana" + vista "barras": barras de un único año, completando con 0 las semanas sin casos.
+   -	tipo de grafico "semana" + vista "líneas": una línea por cada año seleccionado, para comparar la distribución estacional entre años.
 -  En todos los casos, tipo_casos determina si se grafica el total notificado, los confirmados o los probables. Ese gráfico es el output principal.
--  Además, se generan los outputs para los value boxes (total de casos, tasa de incidencia acumulada, período con mayor carga), calculados con calcular_resumen_tiempo().
+-  Además, se generan los outputs para los value boxes (total de casos, tasa de incidencia acumulada, período con mayor carga), calculados con `calcular_resumen_tiempo()`.
 
 ## Diseño UI
 
@@ -125,7 +125,6 @@ Se usa la librería bslib para generar un layout con navbar superior, donde se u
 ## Decisiones de diseño 
 
 - Se usa una arquitectura modular para facilitar escalabilidad y mantenimiento
-- La interfaz se construirá con `bslib` para mantener consistencia visual y responsividad.
 - Los filtros globales se centralizan en el server principal
 - Los módulos reciben reactives y no dataframes estáticos.. 
 - Los helpers se diseñan como funciones independientes de Shiny para facilitar reutilización y mantenimiento.

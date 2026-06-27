@@ -31,18 +31,11 @@ moduloPersonaUI <- function(id) {
     # fila con inputs a la derecha, gráfico a la izquierda ------------------------------
     layout_columns(
       col_widths = c(9,3),     
-      
-      # card(
-      #   card_header("Distribución por persona"),
-      #   highchartOutput(ns("grafico_principal"))
-      # ),
-      
       card(
         min_height = "500px", 
         card_header("Distribución por persona"),
         highchartOutput(ns("grafico_principal"))
       ),
-      
       card(
         card_header("Opciones gráfco"),
         radioButtons(ns("tipo_grafico"), "Tipo de gráfico",
@@ -82,7 +75,7 @@ moduloPersonaServer <- function(id, base_filtrada) {
     
     output$grafico_principal <- renderHighchart({
   
-      df_grafico <- switch(input$clasif_casos,
+      df_grafico <- switch(input$clasif_casos, # según clasif_casos sea "total", "confirmados" o "probables, se ejectuta solo la sentencia correspondiente. Se filtra la base para pasar a la función para hacer el gráfico 
                            total = base_filtrada(),
                            confirmados = base_filtrada() |> filter(CLASIFICACION == "CONFIRMADO"),
                            probables= base_filtrada() |> filter(CLASIFICACION == "PROBABLE")

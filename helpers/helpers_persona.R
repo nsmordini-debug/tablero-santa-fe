@@ -1,5 +1,6 @@
 
 # para value boxes -------------------------------------------------------------
+# (llevarlos a una sola función dp para que quede parejo con los otros)
 
 calcular_mediana_edad <- function(df) {
   median(df$EDAD_DIAGNOSTICO, na.rm = TRUE)
@@ -23,12 +24,11 @@ calcular_rango_etario <- function(df) {
 # para gráficos ----------------------------------------------------------------
 
 orden_grupos <- c(
-  "Menores de 1 año", "1-4 años", "5-9 años", "10-14 años",
-  "15-19 años", "20-24 años", "25-29 años", "30-34 años",
-  "35-39 años", "40-44 años", "45-49 años", "50-54 años",
-  "55-59 años", "60-64 años", "65-69 años", "70-74 años",
-  "75-79 años", "80 y más"
+  "Menores de 1 año", "1-4 años", "5-9 años", "10-14 años","15-19 años", "20-24 años", "25-29 años", "30-34 años",
+  "35-39 años", "40-44 años", "45-49 años", "50-54 años","55-59 años", "60-64 años", "65-69 años", "70-74 años","75-79 años", "80 y más"
 )
+
+# gráfico de pirámide
 
 grafico_sexo_edad <- function(df, mostrar_como) {
   
@@ -42,7 +42,6 @@ grafico_sexo_edad <- function(df, mostrar_como) {
   
   #browser()
   
-  # si mostrar_como == "porcentaje", se calcula
   if (mostrar_como == "porcentaje") {
     total <- sum(df_sexo_edad$nro)
     df_sexo_edad <- df_sexo_edad |>
@@ -60,7 +59,6 @@ grafico_sexo_edad <- function(df, mostrar_como) {
   mujeres <- df_wide$F
   varones <- df_wide$M * -1   # negativos para ir a la izquierda
   
-  # etiqueta del eje x
   label_x <- if (mostrar_como == "porcentaje") "%" else "Casos"
   
   highchart() |>
@@ -105,6 +103,9 @@ grafico_sexo_edad <- function(df, mostrar_como) {
     ) |>
     hc_title(text = "Distribución por sexo y edad")
 }
+
+
+# gráfico de barras
 
 grafico_edad <- function(df, mostrar_como) {
   
