@@ -1,24 +1,16 @@
 
 ui <- page_navbar(
   
-  # title = tagList(
-  #   img(src = "LogoColor.png", height = "30px", style = "margin-right: 8px;"),
-  #   "Tablero Epidemiológico"
-  # ),
-  
   title = tagList(
     img(src = "LogoColor.png", height = "40px", style = "margin-right: 12px;"),
-    tags$span("Tablero Epidemiológico", 
-              style = "font-weight: 400; opacity: 0.85;")
+    tags$span("Tablero Epidemiológico", style = "font-weight: 400; opacity: 0.85;")
   ),
   
   id = "navbar",
   
   header = tagList(
     useShinyjs(),                            
-    tags$head(
-      tags$link(rel = "stylesheet", type = "text/css", href = "estilos.css")
-    )
+    tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "estilos.css"))
   ),
   
   theme = bs_theme(bootswatch = "zephyr") |> #flatly, minty, yeti
@@ -46,7 +38,7 @@ ui <- page_navbar(
       selectInput(
         inputId = "filtro_evento",
         #label= "Evento",
-        label    = tagList("Evento ", tags$br(),tags$small(class = "text-muted", "Seleccione el evento")),
+        label = tagList("Evento ", tags$br(),tags$small(class = "text-muted", "Seleccione el evento")),
         choices = eventos_disponibles,
         selected = "Coqueluche"
       ),
@@ -54,7 +46,7 @@ ui <- page_navbar(
       selectInput(
         inputId = "filtro_anio",
         #label = "Año",
-        label   = tagList("Año ", tags$br(), tags$small(class = "text-muted", "Seleccione uno o más años")),
+        label = tagList("Año ", tags$br(), tags$small(class = "text-muted", "Seleccione uno o más años")),
         choices = anios_disponibles,
         selected = 2025, #anios_disponibles,   
         multiple = TRUE
