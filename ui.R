@@ -21,6 +21,9 @@ ui <- page_navbar(
       .value-boxes .value-box-showcase {
         font-size: 1.1rem !important;
       }
+      .value-boxes .value-box-title {
+        font-size: 0.8rem !important;
+      }
       .value-boxes {
         margin-bottom: -20px; /*p disminuir espacio dp de los vb*/
       }

@@ -108,6 +108,8 @@ moduloTiempoServer <- function(id, base_filtrada, anios_seleccionados,base_sin_a
     
     output$grafico_tiempo <- renderHighchart({
       
+      validate(need(nrow(base_grafico()) > 0, "No hay casos para los filtros seleccionados."))
+      
       req(input$vista_semana)
       req(input$vista_semana != "corredor")
       
@@ -124,6 +126,8 @@ moduloTiempoServer <- function(id, base_filtrada, anios_seleccionados,base_sin_a
     output$grafico_corredor <- renderPlotly({
       
       req(input$vista_semana == "corredor")
+      
+      validate(need(nrow(base_sin_anio()) > 0, "No hay casos para los filtros seleccionados."))
       
       corredor_endemico(
         base_sin_anio(),

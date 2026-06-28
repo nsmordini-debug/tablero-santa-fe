@@ -4,8 +4,8 @@
 preparar_serie_temporal <- function(df, tipo_grafico) {
   
   columna_periodo <- switch(tipo_grafico, 
-                  semana = "SEPI_MINIMA", 
-                  anio = "ANIO_MINIMO")
+                            semana = "SEPI_MINIMA", 
+                            anio = "ANIO_MINIMO")
   
   max_semana <- max(max(df$SEPI_MINIMA, na.rm = TRUE), 52) # ver si hay una mejor forma...
   
@@ -30,13 +30,19 @@ calcular_vb_tiempo <- function(df, tipo_grafico, pob_df, anios_sel) {
   
   df_serie <- preparar_serie_temporal(df, tipo_grafico)
   
+  # total de casos
   total <- sum(df_serie$casos)
   
-  # Período con mayor carga
-  fila_max <- df_serie |> filter(casos == max(casos)) |> slice(1) # ver cómo manenejar empates...
-  periodo_max <- paste0(fila_max$periodo, " (", fila_max$casos, " casos)")
+  # período con mayor carga
+  if (total == 0) {
+    periodo_max <- "—" #porque si no x el complete le asigna 1
+  } else {
+    fila_max <- df_serie |> filter(casos == max(casos)) |> slice(1)
+    prefijo <- if(tipo_grafico == "semana") "SE " else ""
+    periodo_max <- paste0(prefijo, fila_max$periodo, " (", fila_max$casos, " casos)")
+  }
   
-  # Tasa 
+  # tasa
   pob <- preparar_poblacion(pob_df, anios_sel)
   pob_total <- sum(pob$poblacion)
   confirmados_total <- sum(df_serie$confirmados)
@@ -45,7 +51,7 @@ calcular_vb_tiempo <- function(df, tipo_grafico, pob_df, anios_sel) {
   list(
     total = total,
     periodo_max = periodo_max,
-    tasa = paste0(tasa, "por 100.000 hab.")
+    tasa = paste0(tasa, " por 100.000 hab.")
   )
 }
 
@@ -191,6 +197,17 @@ corredor_endemico <- function(df, col_anio, col_semana,
     df <- df |> filter(.data[[col_clasificacion]] %in% clasif_incluidas)
   }
   
+  if (nrow(df) == 0) {
+    return(
+      plotly_empty(type = "scatter", mode = "markers") |>
+        layout(
+          title = list(text = "No hay datos suficientes para generar el corredor endémico"),
+          xaxis = list(visible = FALSE),
+          yaxis = list(visible = FALSE)
+        )
+    )
+  }
+  
   anio_actual <- max(df[[col_anio]], na.rm = TRUE)
   
   if (is.null(semana_hasta)) {
@@ -199,6 +216,17 @@ corredor_endemico <- function(df, col_anio, col_semana,
   
   historico <- df |> filter(.data[[col_anio]] < anio_actual)
   actual <- df |> filter(.data[[col_anio]] == anio_actual)
+  
+  if (nrow(historico) == 0) {
+    return(
+      plotly_empty(type = "scatter", mode = "markers") |>
+        layout(
+          title = list(text = "No hay datos suficientes para generar el corredor endémico"),
+          xaxis = list(visible = FALSE),
+          yaxis = list(visible = FALSE)
+        )
+    )
+  }
   
   historico_semanal <- historico |>
     group_by(anio = .data[[col_anio]], semana = .data[[col_semana]]) |>

@@ -104,7 +104,9 @@ moduloLugarServer <- function(id, base_filtrada, depto_seleccionado, anios_selec
     output$mapa <- renderLeaflet({
       depto <- depto_seleccionado()
       base <- base_filtrada()
-      req(nrow(base) > 0)
+      
+      #req(nrow(base) > 0) # ahora validate se encargaría de cubrir esto...
+      validate(need(nrow(base_filtrada()) > 0, "No hay casos para los filtros seleccionados."))
       
       tryCatch({
         if (is.null(depto)) {

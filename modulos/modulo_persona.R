@@ -74,6 +74,8 @@ moduloPersonaServer <- function(id, base_filtrada) {
     # gráfico principal ---------------------------------------------------------
     
     output$grafico_principal <- renderHighchart({
+      
+      validate(need(nrow(base_filtrada()) > 0, "No hay casos para los filtros seleccionados."))
   
       df_grafico <- switch(input$clasif_casos, # según clasif_casos sea "total", "confirmados" o "probables, se ejectuta solo la sentencia correspondiente. Se filtra la base para pasar a la función para hacer el gráfico 
                            total = base_filtrada(),

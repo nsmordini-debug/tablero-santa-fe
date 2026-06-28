@@ -9,7 +9,7 @@ calcular_mediana_edad <- function(df) {
 calcular_razon_hm <- function(df) {
   hombres <- sum(df$SEXO == "M", na.rm = TRUE)
   mujeres <- sum(df$SEXO == "F", na.rm = TRUE)
-  if (mujeres == 0) return("N/D")
+  if (mujeres == 0) return("—")
   round(hombres / mujeres, 2)
 }
 
