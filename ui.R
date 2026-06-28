@@ -3,7 +3,7 @@ ui <- page_navbar(
   
   title = tagList(
     img(src = "LogoColor.png", height = "40px", style = "margin-right: 12px;"),
-    tags$span("Tablero Epidemiológico", style = "font-weight: 400; opacity: 0.85;")
+    tags$span("Tablero Epidemiológico", style = "font-weight: 500;color: #4a4963;")
   ),
   
   id = "navbar",
