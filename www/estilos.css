@@ -12,9 +12,15 @@
 */
 
 /* Para tamaño del texto en ese value box */
-#persona-vb_rango_etario.value-box-value {
+/*#persona-vb_rango_etario.value-box-value {
   font-size: 1rem !important;
 }
+
+#tiempo-vb_periodo_max.value-box-value {
+  font-size: 1rem !important;
+}
+*/
+
 
 /* .rt-th es la clase que usa reactable para las celdas de header.*/
 .rt-th {

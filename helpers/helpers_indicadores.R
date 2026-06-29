@@ -1,7 +1,7 @@
 
-# función para calcular resumen poara value boxes ------------------------------
+# función para calcular valores para lso value boxes ------------------------------
 
-calcular_resumen_general <- function(df) {
+calcular_value_boxes <- function(df) {
   
   total <- nrow(df)
   confirmados <- sum(df$CLASIFICACION=="CONFIRMADO")
@@ -15,8 +15,7 @@ calcular_resumen_general <- function(df) {
     porcentaje_confirmados = porcentaje_confirmados,
     fallecidos = fallecidos,
     letalidad = letalidad
-  )
-}
+  )}
 
 
 # función auxiliar para preparar el df de estimaciones poblacionales --------------
@@ -35,19 +34,21 @@ preparar_poblacion <- function(pob_df, anios_seleccionados) {
 
 calcular_tabla_indicadores <- function(df, pob_df, anios_seleccionados, evento_seleccionado) {
   
+  # filas deptos
+  
   pob <- preparar_poblacion(pob_df, anios_seleccionados)
   
   por_depto <- df |>
     group_by(DEPARTAMENTO_RESIDENCIA) |>
     summarise(
-      Total       = n(),
+      Total = n(),
       Confirmados = sum(CLASIFICACION == "CONFIRMADO", na.rm = TRUE),
-      Probables   = sum(CLASIFICACION == "PROBABLE", na.rm = TRUE),
-      Fallecidos  = sum(FALLECIDO == "SI", na.rm = TRUE),
+      Probables = sum(CLASIFICACION == "PROBABLE", na.rm = TRUE),
+      Fallecidos = sum(FALLECIDO == "SI", na.rm = TRUE),
       .groups = "drop"
     ) |>
     mutate(
-      `% Positiv.`  = if_else(Total > 0, round(Confirmados / Total * 100, 1), NA_real_),
+      `% Positiv.` = if_else(Total > 0, round(Confirmados / Total * 100, 1), NA_real_),
       `% Letalidad` = if_else(Confirmados > 0, round(Fallecidos / Confirmados * 100, 1), NA_real_)
     ) |>
     left_join(pob, by = c("DEPARTAMENTO_RESIDENCIA" = "nombre_depto")) |>
@@ -55,22 +56,26 @@ calcular_tabla_indicadores <- function(df, pob_df, anios_seleccionados, evento_s
     select(-poblacion) |>
     arrange(DEPARTAMENTO_RESIDENCIA)
   
+  # fila total
+  
   pob_total <- sum(pob$poblacion)
   
   fila_total <- df |>
     summarise(
-      Total       = n(),
+      Total = n(),
       Confirmados = sum(CLASIFICACION == "CONFIRMADO", na.rm = TRUE),
-      Probables   = sum(CLASIFICACION == "PROBABLE", na.rm = TRUE),
-      Fallecidos  = sum(FALLECIDO == "SI", na.rm = TRUE)
+      Probables = sum(CLASIFICACION == "PROBABLE", na.rm = TRUE),
+      Fallecidos = sum(FALLECIDO == "SI", na.rm = TRUE)
     ) |>
     mutate(
-      `% Positiv.`  = if_else(Total > 0, round(Confirmados / Total * 100, 1), NA_real_),
+      `% Positiv.` = if_else(Total > 0, round(Confirmados / Total * 100, 1), NA_real_),
       `% Letalidad` = if_else(Confirmados > 0, round(Fallecidos / Confirmados * 100, 1), NA_real_),
-      Departamento  = "TOTAL",
+      Departamento = "TOTAL",
       `Tasa x 100.000 hab.` = round(Confirmados / pob_total * 100000, 1),
       .before = everything()
     )
+  
+  # union
   
   por_depto_completo <- tabla_depos |>
     left_join(por_depto, by = c("Departamento" = "DEPARTAMENTO_RESIDENCIA"))
@@ -78,25 +83,27 @@ calcular_tabla_indicadores <- function(df, pob_df, anios_seleccionados, evento_s
   tabla_final <- bind_rows(por_depto_completo, fila_total) |>
     mutate(across(where(is.numeric), ~ replace_na(., 0)))
   
-  # --- Selección de columnas según el grupo del evento ------------------------
+  # selección de columnas según el grupo del evento (ver en global)
+  
   if (evento_seleccionado %in% eventos_sin_confirmacion) {
     tabla_final <- tabla_final |>
       select(Departamento, Total, Fallecidos, `% Letalidad`, `Tasa x 100.000 hab.`)
   }
-  # Si el evento es "con confirmación" (o cualquier otro no listado), se devuelven todas las columnas
-  
   tabla_final
 }
+
+
 # función para crear el reactable a partir de la tabla armada con la funcion anterior---------- 
 
 tabla_indicadores <- function(df_tabla) {
   
-  # prmero todas las columnas posibles
+  # formato para todas las columnas posibles
   columnas_posibles <- list(
+    
     Departamento = colDef(
       name = "Departamento",
       minWidth = 140,
-      sticky   = "left",
+      sticky = "left",
       style = function(value) {
         if (value == "TOTAL") list(fontWeight = "bold") else NULL
       },
@@ -104,18 +111,26 @@ tabla_indicadores <- function(df_tabla) {
         if (value == "TOTAL") tags$b(value) else value
       }
     ),
+    
     Total = colDef(align = "center"),
+    
     Confirmados = colDef(name = "Casos confirm.", align = "center"),
+    
     Probables = colDef(name = "Casos probab.", align = "center"),
-    `% Positiv.` = colDef(align = "center",
-                          cell = function(value) {
-                            if (is.na(value)) "—" else paste0(value, "%")
-                          }),
+    `% Positiv.` = colDef(
+      align = "center",
+      cell = function(value) {
+        if (is.na(value)) "—" else paste0(value, "%")
+      }),
+    
     Fallecidos = colDef(align = "center"),
-    `% Letalidad` = colDef(align = "center",
-                           cell = function(value) {
-                             if (is.na(value)) "—" else paste0(value, "%")
-                           }),
+    
+    `% Letalidad` = colDef(
+      align = "center",
+      cell = function(value) {
+        if (is.na(value)) "—" else paste0(value, "%")
+      }),
+    
     `Tasa x 100.000 hab.` = colDef(
       align = "center",
       name = "Tasa x 100.000 hab.",
@@ -125,9 +140,10 @@ tabla_indicadores <- function(df_tabla) {
     )
   )
   
-  # para tomar solo las que existen según el evento
+  # se toman solo las que existen según el grupo del evento
   columnas_a_usar <- columnas_posibles[names(columnas_posibles) %in% names(df_tabla)]
   
+  # objeto final reactable que devuelve la función 
   reactable(
     df_tabla,
     striped  = TRUE,
@@ -138,6 +154,7 @@ tabla_indicadores <- function(df_tabla) {
     columns = columnas_a_usar
   )
 }
+
 
 # función para armar el mapa ---------------------------------------------------
 
@@ -155,7 +172,7 @@ mapa_deptos_indicadores <- function(df, shape) {
     left_join(casos_depto, by = c("nam" = "DEPARTAMENTO_RESIDENCIA"))|>
     mutate(casos = replace_na(casos, 0))
   
-  # paleta de color
+  # paleta de color (al final no la usamos acá, la dejo por las dudas)
   pal <- colorNumeric(
     palette = "YlOrRd",
     domain  = shape_datos$casos,
@@ -167,15 +184,11 @@ mapa_deptos_indicadores <- function(df, shape) {
     addTiles() |>
     addPolygons(
       #fillColor = ~pal(casos),
-      fillColor    =  ~ifelse(casos == 0, "#cccccc", "#BD0026"),
+      fillColor =  ~ifelse(casos == 0, "#cccccc", "#BD0026"),
       fillOpacity = 0.7,
       color = "black",
       weight= 1.5,
-      label = ~paste0(
-        nam, ": ",
-        ifelse(casos == 0, "Sin casos",
-               paste0(casos, ifelse(casos == 1, " caso", " casos")))
-      ),
+      label = ~paste0(nam, ": ",ifelse(casos == 0, "Sin casos", paste0(casos, ifelse(casos == 1, " caso", " casos")))),
       labelOptions = labelOptions(style = list("font-size" = "13px"), direction = "auto")
     ) 
   # |>

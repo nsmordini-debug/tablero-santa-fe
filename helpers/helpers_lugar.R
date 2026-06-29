@@ -1,7 +1,7 @@
 
 # Value boxes ------------------------------------------------------------------
 
-calcular_resumen_lugar <- function(df, pob_df, anios_sel, depto_sel,shape_locs) {
+calcular_vb_lugar <- function(df, pob_df, anios_sel, depto_sel,shape_locs) {
   
   total <- nrow(df)
   confirmados <- sum(df$CLASIFICACION=="CONFIRMADO")
@@ -40,56 +40,8 @@ calcular_resumen_lugar <- function(df, pob_df, anios_sel, depto_sel,shape_locs) 
   )
 }
 
-# mapa x deptos ------------------------------------------------------------------
 
-# mapa_provincia <- function(df, shape_deptos, clasif_casos) {
-#   
-#   casos_depto <- df |>
-#     group_by(DEPARTAMENTO_RESIDENCIA) |>
-#     summarise(
-#       casos = n(),
-#       confirmados = sum(CLASIFICACION=="CONFIRMADO"),
-#       probables = sum(CLASIFICACION=="PROBABLE"),
-#       .groups = "drop"
-#     )
-#   
-#   shape_datos <- shape_deptos |>
-#     left_join(casos_depto, by = c("nam" = "DEPARTAMENTO_RESIDENCIA")) |>
-#     mutate(mostrar_valor = switch(clasif_casos,
-#                                   casos = casos,
-#                                   confirmados = confirmados,
-#                                   probables = probables
-#     )
-#   )
-#   
-#   #browser()
-#   
-#   pal <- colorNumeric(
-#     palette  = "YlOrRd",
-#     domain   = shape_datos$mostrar_valor,
-#     na.color = "#cccccc"
-#   )
-#   
-#   leaflet(shape_datos) |>
-#     addTiles() |>
-#     addPolygons(
-#       fillColor = ~pal(mostrar_valor),
-#       fillOpacity = 0.7,
-#       color = "black",
-#       weight = 1.5,
-#      label = ~paste0(nam, ": ", ifelse(is.na(mostrar_valor), "Sin casos", paste0(mostrar_valor, " casos"))),
-#       labelOptions = labelOptions(
-#         style = list("font-size" = "13px"),
-#         direction = "auto"
-#       )
-#     ) #|>
-#   # addLegend(
-#   #   pal= pal,
-#   #   values   = ~mostrar_valor,
-#   #   title = titulo,
-#   #   position = "bottomright"
-#   # )
-# }
+# mapa por departamentos -------------------------------------------------------
 
 mapa_provincia <- function(df, shape_deptos, clasif_casos, mostrar_como, pob_df, anios_sel) {
   
@@ -152,6 +104,7 @@ mapa_provincia <- function(df, shape_deptos, clasif_casos, mostrar_como, pob_df,
       position = "bottomright"
     )
 }
+
 
 # mapa x localidades -------------------------------------------------------------
 

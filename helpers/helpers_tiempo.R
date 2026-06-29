@@ -1,11 +1,11 @@
 
-# Preparación del dataframe, agrupando x semana o año --------------------------
+# función para preparar el dataframe, agrupando x semana o año -----------------
 
 preparar_serie_temporal <- function(df, tipo_grafico) {
   
   columna_periodo <- switch(tipo_grafico, 
-                  semana = "SEPI_MINIMA", 
-                  anio = "ANIO_MINIMO")
+                            semana = "SEPI_MINIMA", 
+                            anio = "ANIO_MINIMO")
   
   max_semana <- max(max(df$SEPI_MINIMA, na.rm = TRUE), 52) # ver si hay una mejor forma...
   
@@ -22,6 +22,40 @@ preparar_serie_temporal <- function(df, tipo_grafico) {
              fill = list(casos = 0, confirmados = 0, probables = 0)) |>
     arrange(periodo)
 }
+
+
+# value boxes ------------------------------------------------------------------
+
+calcular_vb_tiempo <- function(df, tipo_grafico, pob_df, anios_sel) {
+  
+  df_serie <- preparar_serie_temporal(df, tipo_grafico)
+  
+  # total de casos
+  total <- sum(df_serie$casos)
+  
+  # período con mayor carga
+  if (total == 0) {
+    periodo_max <- "—" #porque si no x el complete le asigna 1
+  } else {
+    fila_max <- df_serie |> filter(casos == max(casos)) |> slice(1)
+    prefijo <- if(tipo_grafico == "semana") "SE " else ""
+    periodo_max <- paste0(prefijo, fila_max$periodo, " (", fila_max$casos, " casos)")
+  }
+  
+  # tasa
+  pob <- preparar_poblacion(pob_df, anios_sel)
+  pob_total <- sum(pob$poblacion)
+  confirmados_total <- sum(df_serie$confirmados)
+  tasa <- round(confirmados_total / pob_total * 100000, 1)
+  
+  list(
+    total = total,
+    periodo_max = periodo_max,
+    tasa = paste0(tasa, " por 100.000 hab.")
+  )
+}
+
+
 
 # Gráfico ----------------------------------------------------------------------
 
@@ -64,7 +98,7 @@ grafico_temporal <- function(df, tipo_grafico, clasif_casos, pob_df, anios_sel, 
     a <- anios_sel[1] 
     
     semana_actual <- as.integer(format(Sys.Date(), "%V"))
-    anio_actual   <- as.integer(format(Sys.Date(), "%Y"))
+    anio_actual <- as.integer(format(Sys.Date(), "%Y"))
     
     tope_anio <- if (a == anio_actual) {
       semana_actual
@@ -107,6 +141,7 @@ grafico_temporal <- function(df, tipo_grafico, clasif_casos, pob_df, anios_sel, 
     
   } else {
     
+    
     # gráfico de líneas por semana epidemiológica
     
     anios_presentes <- sort(unique(df$ANIO_MINIMO))
@@ -122,7 +157,7 @@ grafico_temporal <- function(df, tipo_grafico, clasif_casos, pob_df, anios_sel, 
     }"))
     
     semana_actual <- as.integer(format(Sys.Date(), "%V"))
-    anio_actual   <- as.integer(format(Sys.Date(), "%Y"))
+    anio_actual <- as.integer(format(Sys.Date(), "%Y"))
     
     for (a in anios_presentes) {
       tope_anio <- if (a == anio_actual) semana_actual else max(max(df$SEPI_MINIMA[df$ANIO_MINIMO == a], na.rm = TRUE), 52)
@@ -158,29 +193,46 @@ corredor_endemico <- function(df, col_anio, col_semana,
                               col_clasificacion = NULL, clasif_incluidas = NULL,
                               semana_hasta = NULL) {
   
-  
   if (!is.null(col_clasificacion) && !is.null(clasif_incluidas)) {
     df <- df |> filter(.data[[col_clasificacion]] %in% clasif_incluidas)
   }
   
+  if (nrow(df) == 0) {
+    return(
+      plotly_empty(type = "scatter", mode = "markers") |>
+        layout(
+          title = list(text = "No hay datos suficientes para generar el corredor endémico"),
+          xaxis = list(visible = FALSE),
+          yaxis = list(visible = FALSE)
+        )
+    )
+  }
+  
   anio_actual <- max(df[[col_anio]], na.rm = TRUE)
   
-  # Si no se especifica, usar la semana actual del calendario como tope
   if (is.null(semana_hasta)) {
     semana_hasta <- as.integer(format(Sys.Date(), "%V"))
   }
   
   historico <- df |> filter(.data[[col_anio]] < anio_actual)
-  actual    <- df |> filter(.data[[col_anio]] == anio_actual)
+  actual <- df |> filter(.data[[col_anio]] == anio_actual)
   
-  # Histórico: siempre se completa hasta 52 (años ya cerrados)
+  if (nrow(historico) == 0) {
+    return(
+      plotly_empty(type = "scatter", mode = "markers") |>
+        layout(
+          title = list(text = "No hay datos suficientes para generar el corredor endémico"),
+          xaxis = list(visible = FALSE),
+          yaxis = list(visible = FALSE)
+        )
+    )
+  }
+  
   historico_semanal <- historico |>
     group_by(anio = .data[[col_anio]], semana = .data[[col_semana]]) |>
     summarise(casos = n(), .groups = "drop") |>
-    complete(anio = unique(historico[[col_anio]]), semana = 1:52,
-             fill = list(casos = 0))
+    complete(anio = unique(historico[[col_anio]]), semana = 1:52, fill = list(casos = 0))
   
-  # Año actual: se completa solo hasta semana_hasta
   actual_semanal <- actual |>
     group_by(semana = .data[[col_semana]]) |>
     summarise(casos = n(), .groups = "drop") |>
@@ -189,67 +241,67 @@ corredor_endemico <- function(df, col_anio, col_semana,
   corredor <- historico_semanal |>
     group_by(semana) |>
     summarise(
-      q25     = quantile(casos, 0.25, na.rm = TRUE),
-      q50     = quantile(casos, 0.50, na.rm = TRUE),
-      q75     = quantile(casos, 0.75, na.rm = TRUE),
-      maximo  = max(casos, na.rm = TRUE),
+      q25 = quantile(casos, 0.25, na.rm = TRUE),
+      q50 = quantile(casos, 0.50, na.rm = TRUE),
+      q75 = quantile(casos, 0.75, na.rm = TRUE),
+      maximo = max(casos, na.rm = TRUE),
       .groups = "drop"
     ) |>
     left_join(actual_semanal, by = "semana")
   
-  corredor <- corredor |>
-    mutate(
-      zona = case_when(
-        casos < q25 ~ "Éxito",
-        casos >= q25 & casos < q50 ~ "Seguridad",
-        casos >= q50 & casos < q75 ~ "Alerta",
-        casos >= q75 ~ "Epidemia",
-        TRUE ~ NA_character_
-      )
-    )
+  nombre_anio <- as.character(anio_actual)
   
   p <- ggplot(corredor, aes(x = semana)) +
-    geom_ribbon(aes(ymin = 0, ymax = q25), fill = "#b7e4c7", alpha = 0.8) +
-    geom_ribbon(aes(ymin = q25, ymax = q50), fill = "#fff3b0", alpha = 0.8) +
-    geom_ribbon(aes(ymin = q50, ymax = q75), fill = "#fcbf49", alpha = 0.8) +
-    geom_ribbon(aes(ymin = q75, ymax = maximo), fill = "#e63946", alpha = 0.7) +
-    geom_line(aes(y = casos), linewidth = 1.2, color = "black") +
-    geom_point(aes(y = casos), size = 2, color = "black") +
+    geom_ribbon(aes(ymin = 0, ymax = q25, fill = "Éxito"), alpha = 0.8) +
+    geom_ribbon(aes(ymin = q25, ymax = q50, fill = "Seguridad"), alpha = 0.8) +
+    geom_ribbon(aes(ymin = q50, ymax = q75, fill = "Alerta"), alpha = 0.8) +
+    geom_ribbon(aes(ymin = q75, ymax = maximo, fill = "Brote"), alpha = 0.7) +
+    geom_line(aes(y = casos, color = nombre_anio), linewidth = 0.5) +
+    geom_point(aes(y = casos, color = nombre_anio), size = 0.8) +
+    scale_fill_manual(
+      name   = NULL,
+      values = c("Éxito" = "#b7e4c7",
+                 "Seguridad" = "#fff3b0",
+                 "Alerta" = "#fcbf49",
+                 "Brote" = "#e63946")
+    ) +
+    scale_color_manual(
+      name = NULL,
+      values = setNames("black", nombre_anio)
+    ) +
     labs(
       title = "Corredor endémico",
       subtitle = paste("Año:", anio_actual, "— Histórico:",
                        min(historico[[col_anio]], na.rm = TRUE), "-",
                        anio_actual - 1),
-      x = "Semana epidemiológica",
+      x = NULL, #"Semana epidemiológica",
       y = "Casos"
     ) +
     scale_x_continuous(breaks = seq(1, 52, by = 4)) +
-    theme_minimal()
+    theme_minimal() +
+    theme(
+      legend.position = "bottom",
+      legend.direction = "horizontal",
+      legend.box = "horizontal"
+    )
   
-  ggplotly(p)
+  fig <- ggplotly(p) |>
+    layout(
+      legend = list(
+        orientation = "h",
+        x = 0.5,
+        xanchor = "center",
+        y = -0.15
+      )
+    )
+  
+  # para limpiar los nombres de la leyenda...
+  for (i in seq_along(fig$x$data)) {
+    nombre_actual <- fig$x$data[[i]]$name
+    if (!is.null(nombre_actual)) {
+      fig$x$data[[i]]$name <- gsub(",.*", "", gsub("^\\(", "", nombre_actual))
+    }
+  }
+  fig
 }
 
-# value boxes ------------------------------------------------------------------
-
-calcular_resumen_tiempo <- function(df, tipo_grafico, pob_df, anios_sel) {
-  
-  df_serie <- preparar_serie_temporal(df, tipo_grafico)
-  
-  total <- sum(df_serie$casos)
-  
-  # Período con mayor carga
-  fila_max <- df_serie |> filter(casos == max(casos)) |> slice(1) # ver cómo manenejar empates...
-  periodo_max <- paste0(fila_max$periodo, " (", fila_max$casos, " casos)")
-  
-  # Tasa 
-  pob <- preparar_poblacion(pob_df, anios_sel)
-  pob_total <- sum(pob$poblacion)
-  confirmados_total <- sum(df_serie$confirmados)
-  tasa <- round(confirmados_total / pob_total * 100000, 1)
-  
-  list(
-    total = total,
-    periodo_max = periodo_max,
-    tasa = paste0(tasa, "por 100.000 hab.")
-  )
-}

@@ -31,12 +31,10 @@ moduloLugarUI <- function(id) {
     # mapa ---------------------------------------------------------------------
     layout_columns(
       col_widths = c(9,3),
-      
       card(
         card_header(textOutput(ns("titulo_mapa"))),
         leafletOutput(ns("mapa"), height = "500px")
       ),
-      
       card(
         card_header("Opciones gráfico"),
         radioButtons(
@@ -74,8 +72,8 @@ moduloLugarServer <- function(id, base_filtrada, depto_seleccionado, anios_selec
     # Value boxes --------------------------------------------------------------
     
     # Resumen 
-    resumen <- reactive({
-      calcular_resumen_lugar(
+    vb_lugar <- reactive({
+      calcular_vb_lugar(
         base_filtrada(),
         poblacion,
         anios_seleccionados(),
@@ -84,19 +82,17 @@ moduloLugarServer <- function(id, base_filtrada, depto_seleccionado, anios_selec
       )
     })
     
-    output$vb_total <- renderText({ resumen()$total })
+    output$vb_total <- renderText({vb_lugar()$total})
     
-    output$vb_tasa <- renderText({ resumen()$tasa })
+    output$vb_tasa <- renderText({vb_lugar()$tasa})
     
-    output$vb_mayor_carga <- renderText({ resumen()$mayor_carga })
+    output$vb_mayor_carga <- renderText({vb_lugar()$mayor_carga})
     
-    output$vb_titulo_max <- renderText({ resumen()$titulo_max })
+    output$vb_titulo_max <- renderText({vb_lugar()$titulo_max})
     
-    vista_provincial <- reactive({
-      is.null(depto_seleccionado())
-    })
     
-    # Título dinámico del mapa
+    # Mapa ---------------------------------------------------------------------
+    
     output$titulo_mapa <- renderText({
       if (is.null(depto_seleccionado())) {
         "Distribución provincial por departamento"
@@ -104,14 +100,13 @@ moduloLugarServer <- function(id, base_filtrada, depto_seleccionado, anios_selec
         paste("Localidades —", depto_seleccionado())
       }
     })
-   
-    
-    # Mapa ----------------------------------------------------------------------
 
     output$mapa <- renderLeaflet({
       depto <- depto_seleccionado()
-      base  <- base_filtrada()
-      req(nrow(base) > 0)
+      base <- base_filtrada()
+      
+      #req(nrow(base) > 0) # ahora validate se encargaría de cubrir esto...
+      validate(need(nrow(base_filtrada()) > 0, "No hay casos para los filtros seleccionados."))
       
       tryCatch({
         if (is.null(depto)) {
@@ -125,7 +120,10 @@ moduloLugarServer <- function(id, base_filtrada, depto_seleccionado, anios_selec
       })
     })
     
+    
     # output dinámico para mostrar o no el input de qué mostrar ----------------
+    # (ver el conditional panen en la ui: es para dar la opción de mostrar tasas solo para
+    # la vista provincial, y no de los deptos porque no tenemos poblaciones x localidades)
     
     output$vista_provincial <- reactive({
       is.null(depto_seleccionado())
